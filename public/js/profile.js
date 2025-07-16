@@ -130,6 +130,82 @@ $(document).ready(function () {
         });
     });
 
+  // Deactivation button handler
+$('#deactivateBtn').on('click', function() {
+    Swal.fire({
+        title: 'Deactivate Account',
+        html: `
+            <p>This will permanently deactivate your account. To confirm, please enter your password:</p>
+            <input type="password" id="deactivatePassword" class="swal2-input" placeholder="Your Password">
+        `,
+        showCancelButton: true,
+        confirmButtonText: 'Deactivate',
+        cancelButtonText: 'Cancel',
+        focusConfirm: false,
+        preConfirm: () => {
+            const password = Swal.getPopup().querySelector('#deactivatePassword').value;
+            if (!password) {
+                Swal.showValidationMessage('Password is required');
+                return false;
+            }
+            return { password: password };
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const userId = $('#userId').val();
+            const password = result.value.password;
+            
+            // Show loading
+            Swal.fire({
+                title: 'Deactivating Account...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Call deactivation endpoint
+            $.ajax({
+                method: "POST",
+                url: "/api/users/deactivate", // Make sure this matches your backend route
+                data: JSON.stringify({
+                    userId: userId,
+                    password: password
+                }),
+                contentType: 'application/json',
+                dataType: "json",
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Account Deactivated',
+                            text: 'Your account has been deactivated successfully. You will be logged out shortly.',
+                            timer: 3000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Redirect to login or home page
+                            window.location.href = '/users/login';
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Deactivation Failed',
+                            text: response.error || 'Failed to deactivate account'
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    const error = xhr.responseJSON?.error || 'Server error during deactivation';
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Deactivation Failed',
+                        text: error
+                    });
+                }
+            });
+        }
+    });
+});
     // Initialize everything
     initHeader();
     fetchProfileData();
