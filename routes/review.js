@@ -5,10 +5,11 @@ const upload = require('../middlewares/upload');
 
 router.post('/create', upload.array('images', 5), reviewController.createReview);
 router.get('/customer/:customerId', reviewController.getReviewsByCustomer);
-
-// User review actions
+router.get('/', reviewController.getAllReviews);
 router.put('/edit/:id', upload.array('images', 5), reviewController.updateReview); 
 router.put('/delete/:id', reviewController.softDeleteReview); 
 router.patch('/restore/:id', reviewController.restoreReview); 
+router.get('/admin', reviewController.getAllDeletedReviews);
+
 
 module.exports = router;

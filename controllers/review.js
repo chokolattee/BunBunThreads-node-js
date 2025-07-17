@@ -63,8 +63,9 @@ const getAllReviews = (req, res) => {
         SELECT 
             r.*, 
             i.item_name,
-            c.first_name AS customer_first_name,
-            c.last_name AS customer_last_name
+            c.fname,
+            c.lname,
+            concat(c.fname, ' ', c.lname) AS customer_name
         FROM reviews r
         INNER JOIN item i ON r.item_id = i.item_id
         INNER JOIN customer c ON r.customer_id = c.customer_id
@@ -83,6 +84,67 @@ const getAllReviews = (req, res) => {
             if (err instanceof Error) {
                 console.log(err);
                 return res.status(500).json({ error: 'Database error fetching reviews' });
+            }
+
+            // Get all review images
+            db.query(imagesSql, (err, images) => {
+                if (err instanceof Error) {
+                    console.log(err);
+                    return res.status(500).json({ error: 'Database error fetching review images' });
+                }
+
+                // Group images by review_id
+                const imagesByReview = images.reduce((acc, image) => {
+                    if (!acc[image.review_id]) {
+                        acc[image.review_id] = [];
+                    }
+                    acc[image.review_id].push(image.image_path);
+                    return acc;
+                }, {});
+
+                const reviewsWithImages = reviews.map(review => ({
+                    ...review,
+                    images: imagesByReview[review.review_id] || [],
+                    image: imagesByReview[review.review_id] ? imagesByReview[review.review_id][0] : null
+                }));
+
+                return res.status(200).json({
+                    rows: reviewsWithImages
+                });
+            });
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({ error: 'Server error' });
+    }
+};
+
+const getAllDeletedReviews = (req, res) => {
+    const sql = `
+        SELECT 
+            r.*, 
+            i.item_name,
+            c.fname,
+            c.lname,
+            concat(c.fname, ' ', c.lname) AS customer_name
+        FROM reviews r
+        INNER JOIN item i ON r.item_id = i.item_id
+        INNER JOIN customer c ON r.customer_id = c.customer_id
+        WHERE r.deleted_at IS NOT NULL
+        ORDER BY r.deleted_at DESC
+    `;
+
+    const imagesSql = `
+        SELECT review_id, image_path 
+        FROM review_images 
+        WHERE deleted_at IS NULL
+    `;
+
+    try {
+        db.query(sql, (err, reviews, fields) => {
+            if (err instanceof Error) {
+                console.log(err);
+                return res.status(500).json({ error: 'Database error fetching deleted reviews' });
             }
 
             // Get all review images
@@ -243,5 +305,7 @@ module.exports = {
     getReviewsByCustomer,
     updateReview,
     softDeleteReview,
-    restoreReview
+    restoreReview,
+    getAllReviews,
+    getAllDeletedReviews
 };
