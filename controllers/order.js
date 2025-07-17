@@ -269,6 +269,7 @@ const getOrdersByCustomer = (req, res) => {
     const itemSql = `
       SELECT 
         ol.orderinfo_id,
+        ol.item_id,  
         i.item_name,
         i.sell_price AS price,
         ol.quantity
@@ -287,6 +288,7 @@ const getOrdersByCustomer = (req, res) => {
       orderItems.forEach(item => {
         if (!grouped[item.orderinfo_id]) grouped[item.orderinfo_id] = [];
         grouped[item.orderinfo_id].push({
+          item_id: item.item_id, 
           item_name: item.item_name,
           quantity: item.quantity,
           price: item.price

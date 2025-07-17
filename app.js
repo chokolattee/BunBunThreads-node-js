@@ -7,6 +7,7 @@ const dashboardRoutes = require('./routes/dashboard');
 const categoryRoutes = require('./routes/category');
 const orderRoutes = require('./routes/order');  
 const chartRoutes = require('./routes/chart');
+const reviewRoutes = require('./routes/review');
 
 
 require('dotenv').config();
@@ -25,6 +26,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/category', categoryRoutes);
 app.use('/api/orders', orderRoutes);  
 app.use('/api/chart', chartRoutes); 
+app.use('/api/reviews',reviewRoutes);
 
 
 module.exports = app;

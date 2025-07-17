@@ -22,7 +22,6 @@ $(document).ready(async function () {
     try {
         await loadHeader();
         await loadOrders();
-        
     } catch (error) {
         console.error('Initialization error:', error);
         alert('⚠️ Failed to load page content. Please try again.');
@@ -62,7 +61,7 @@ $(document).ready(async function () {
     async function loadOrders() {
         try {
             console.log('Loading orders for userId:', userId);
-            
+
             // Show loading state
             $('#ordersList').html(`
                 <div class="d-flex justify-content-center py-4">
@@ -80,9 +79,9 @@ $(document).ready(async function () {
                     'Authorization': `Bearer ${token}`
                 }
             });
-            
+
             console.log('Profile response:', profileRes);
-            
+
             if (!profileRes.success || !profileRes.data) {
                 $('#ordersList').html('<p class="text-danger">⚠️ No customer profile found.</p>');
                 return;
@@ -90,7 +89,7 @@ $(document).ready(async function () {
 
             const customerId = profileRes.data.customer_id;
             console.log('Customer ID:', customerId);
-            
+
             if (!customerId) {
                 $('#ordersList').html('<p class="text-danger">⚠️ Customer ID not found in profile.</p>');
                 return;
@@ -104,9 +103,9 @@ $(document).ready(async function () {
                     'Authorization': `Bearer ${token}`
                 }
             });
-            
+
             console.log('Orders response:', ordersRes);
-            
+
             if (!ordersRes.success) {
                 $('#ordersList').html(`<p class="text-danger">⚠️ Failed to load orders: ${ordersRes.message || 'Unknown error'}</p>`);
                 return;
@@ -128,7 +127,7 @@ $(document).ready(async function () {
             const html = ordersRes.data.map(order => {
                 // Handle missing or invalid items array
                 const items = Array.isArray(order.items) ? order.items : [];
-                
+
                 // Calculate total
                 const total = items.reduce((sum, item) => {
                     const itemTotal = (parseFloat(item.quantity) || 0) * (parseFloat(item.price) || 0);
@@ -162,9 +161,17 @@ $(document).ready(async function () {
                                 <div class="mt-2">
                                     ${items.map(item => `
                                         <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                            <div>
+                                            <div class="flex-grow-1">
                                                 <span class="fw-medium">${item.item_name || 'Unknown Item'}</span>
                                                 <small class="text-muted d-block">Qty: ${item.quantity || 0}</small>
+                                                ${order.status === 'Delivered' ? `
+                                                    <button class="btn btn-sm btn-outline-primary mt-1 create-review-btn" 
+                                                            data-item-id="${item.item_id}"
+                                                            data-order-id="${order.orderinfo_id}"
+                                                            data-item-name="${escapeHtml(item.item_name || 'Unknown Item')}">
+                                                        <i class="fas fa-star me-1"></i> Create Review
+                                                    </button>
+                                                ` : ''}
                                             </div>
                                             <span class="fw-bold">₱${((parseFloat(item.quantity) || 0) * (parseFloat(item.price) || 0)).toFixed(2)}</span>
                                         </div>
@@ -189,12 +196,12 @@ $(document).ready(async function () {
             }).join('');
 
             $('#ordersList').html(html);
-            
+
         } catch (error) {
             console.error('Error loading orders:', error);
-            
+
             let errorMessage = 'Failed to load orders. Please try again.';
-            
+
             if (error.status === 401) {
                 errorMessage = 'Authentication failed. Please log in again.';
                 setTimeout(() => {
@@ -209,10 +216,33 @@ $(document).ready(async function () {
             } else if (error.status === 500) {
                 errorMessage = 'Server error. Please try again later.';
             }
-            
+
             $('#ordersList').html(`<p class="text-danger">⚠️ ${errorMessage}</p>`);
         }
     }
+
+    // Event handler for create review button
+    $(document).on('click', '.create-review-btn', function () {
+        const itemId = $(this).data('item-id');
+        const orderId = $(this).data('order-id');
+        const itemName = $(this).data('item-name');
+
+        // Validation
+        if (!itemId || !orderId || !itemName) {
+            alert('⚠️ Missing review information. Please try again.');
+            return;
+        }
+
+        // Store the review context in localStorage
+        localStorage.setItem('reviewContext', JSON.stringify({
+            itemId: itemId,
+            orderId: orderId,
+            itemName: itemName
+        }));
+
+        // Redirect to review page
+        window.location.href = '/create-review.html';
+    });
 
     // Helper functions
     function updateCartCount() {
@@ -244,10 +274,23 @@ $(document).ready(async function () {
         };
         return statusClasses[status] || 'bg-secondary';
     }
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+    }
 });
 
-window.logout = function() {
+// Global logout function
+window.logout = function () {
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
+    localStorage.removeItem('reviewContext');
     window.location.href = '/login.html';
 };
