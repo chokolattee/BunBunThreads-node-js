@@ -5,20 +5,38 @@ const jwt = require('jsonwebtoken');
 // ----------------- Register -----------------
 const registerUser = async (req, res) => {
   const { name, password, email } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const userSql = 'INSERT INTO users (name, password, email) VALUES (?, ?, ?)';
-
+  
   try {
-    connection.execute(userSql, [name, hashedPassword, email], (err, result) => {
-      if (err instanceof Error) {
-        console.log(err);
-        return res.status(401).json({ error: err });
+    // First check if email exists
+    const checkSql = 'SELECT id FROM users WHERE email = ?';
+    connection.execute(checkSql, [email], async (checkErr, checkResults) => {
+      if (checkErr) {
+        console.error('Database check error:', checkErr);
+        return res.status(500).json({ error: 'Database error' });
       }
 
-      return res.status(200).json({ success: true, result });
+      if (checkResults.length > 0) {
+        return res.status(400).json({ error: 'Email already exists' });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const userSql = 'INSERT INTO users (name, password, email) VALUES (?, ?, ?)';
+      
+      connection.execute(userSql, [name, hashedPassword, email], (insertErr, result) => {
+        if (insertErr) {
+          console.error('Database insert error:', insertErr);
+          return res.status(500).json({ error: 'Failed to register user' });
+        }
+
+        return res.status(200).json({ 
+          success: true, 
+          userId: result.insertId 
+        });
+      });
     });
   } catch (error) {
-    console.log(error);
+    console.error('Unexpected error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
   }
 };
 
@@ -34,8 +52,9 @@ const loginUser = (req, res) => {
     });
   }
 
+  // Updated SQL query to include role
   const sql = `
-    SELECT id, name, email, password, status 
+    SELECT id, name, email, password, status, role 
     FROM users 
     WHERE email = ?
   `;
@@ -83,9 +102,11 @@ const loginUser = (req, res) => {
         });
       }
 
+      // Include role in JWT token
       const token = jwt.sign({
         id: user.id,
-        email: user.email
+        email: user.email,
+        role: user.role || 'User'  // Include role in token
       }, process.env.JWT_SECRET, {
         expiresIn: '24h'
       });
@@ -104,7 +125,8 @@ const loginUser = (req, res) => {
         const userResponse = {
           id: user.id,
           name: user.name,
-          email: user.email
+          email: user.email,
+          role: user.role || 'User'  
         };
 
         return res.status(200).json({
@@ -209,6 +231,42 @@ const updateUser = (req, res) => {
   });
 };
 
+// ----------------- Create Admin -----------------
+const createAdmin = async (req, res) => {
+  const { name, password, email } = req.body;
+  
+  try {
+    const checkSql = 'SELECT id FROM users WHERE email = ?';
+    connection.execute(checkSql, [email], async (checkErr, checkResults) => {
+      if (checkErr) {
+        console.error('Database check error:', checkErr);
+        return res.status(500).json({ error: 'Database error' });
+      }
+
+      if (checkResults.length > 0) {
+        return res.status(400).json({ error: 'Email already exists' });
+      }
+
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const userSql = 'INSERT INTO users (name, password, email, role) VALUES (?, ?, ?, "Admin")';
+      
+      connection.execute(userSql, [name, hashedPassword, email], (insertErr, result) => {
+        if (insertErr) {
+          console.error('Database insert error:', insertErr);
+          return res.status(500).json({ error: 'Failed to create admin user' });
+        }
+
+        return res.status(200).json({ 
+          success: true, 
+          userId: result.insertId 
+        });
+      });
+    });
+  } catch (error) {
+    console.error('Unexpected error:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+}
 // ----------------- Deactivate User -----------------
 const deactivateUser = async (req, res) => {
   const { userId, password } = req.body;
@@ -496,5 +554,6 @@ module.exports = {
   updateUserStatus,
   getCustomerProfile,
   getAllUsers,
-  getSingleUser
+  getSingleUser,
+  createAdmin
 };

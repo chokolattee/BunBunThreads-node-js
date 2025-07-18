@@ -1,14 +1,22 @@
 const express = require('express');
 const router = express.Router();
-const categoryController = require('../controllers/category');
+const itemController = require('../controllers/item');
+const upload = require('../middlewares/upload');
+const { isAuthenticatedUser, authorizeRoles } = require('../middlewares/auth');
 
-router.get('/admin/all', categoryController.getAllCategoriesWithDeleted);
+// PUBLIC ROUTES
+router.get('/', itemController.getAllItems);
+// router.get('/category/:categoryId', itemController.getItemsByCategory);
+router.get('/search/:term', itemController.searchItems);
 
-router.get('/', categoryController.getAllCategories);
-router.post('/', categoryController.createCategory);
-router.put('/restore/:id', categoryController.restoreCategory);
-router.get('/:id', categoryController.getSingleCategory);
-router.put('/:id', categoryController.updateCategory);
-router.delete('/:id', categoryController.deleteCategory);
+// ADMIN ROUTES - Protected and role-restricted
+router.get('/admin', isAuthenticatedUser, authorizeRoles('Admin'), itemController.getAllItemsIncludingDeleted);
+router.get('/admin/:id', isAuthenticatedUser, authorizeRoles('Admin'), itemController.getSingleItem);
+
+router.post('/admin', isAuthenticatedUser, authorizeRoles('Admin'), upload.array('images', 5), itemController.createItem);
+router.put('/admin/:id', isAuthenticatedUser, authorizeRoles('Admin'), upload.array('images', 5), itemController.updateItem);
+router.delete('/admin/:id', isAuthenticatedUser, authorizeRoles('Admin'), itemController.deleteItem);
+router.patch('/admin/restore/:id', isAuthenticatedUser, authorizeRoles('Admin'), itemController.restoreItem);
+router.get('/admin/all', isAuthenticatedUser, authorizeRoles('Admin'), itemController.getAllItemsIncludingDeleted);
 
 module.exports = router;

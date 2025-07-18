@@ -1,7 +1,69 @@
-
-
 $(document).ready(function () {
+    // Check if user is authorized to access this page
+    function checkAdminAccess() {
+        const userRole = localStorage.getItem('userRole');
+        const token = localStorage.getItem('token');
+
+        // If no token, redirect to login
+        if (!token) {
+            bootbox.alert({
+                message: "Please log in to access this page.",
+                callback: function () {
+                    window.location.href = 'login.html';
+                }
+            });
+            return false;
+        }
+
+        // If user is not Admin, show error and redirect
+        if (userRole !== 'Admin') {
+            bootbox.alert({
+                message: "Access Denied: You do not have permission to access this page. Only administrators can manage charts.",
+                callback: function () {
+                    window.location.href = 'home.html';
+                }
+            });
+            return false;
+        }
+
+        return true;
+    }
+
+    // Check access before initializing the page
+    if (!checkAdminAccess()) {
+        return;
+    }
     const url = 'http://localhost:3000/'
+    
+    // Add authorization header to all AJAX requests
+    $.ajaxSetup({
+        beforeSend: function (xhr) {
+            const token = localStorage.getItem('token');
+            if (token) {
+                xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+            }
+        },
+        error: function (xhr, status, error) {
+            // Handle unauthorized access
+            if (xhr.status === 401) {
+                bootbox.alert({
+                    message: "Your session has expired. Please log in again.",
+                    callback: function () {
+                        localStorage.clear();
+                        window.location.href = 'login.html';
+                    }
+                });
+            } else if (xhr.status === 403) {
+                bootbox.alert({
+                    message: "Access Denied: You do not have permission to perform this action.",
+                    callback: function () {
+                        window.location.href = 'home.html';
+                    }
+                });
+            }
+        }
+    });
+
     $.ajax({
         method: "GET",
         url: `${url}api/chart/address-chart`,
@@ -110,7 +172,7 @@ $(document).ready(function () {
         dataType: "json",
         success: function (data) {
             console.log(data);
-            const {rows} = data
+            const { rows } = data
             var ctx = $("#itemsChart");
             new Chart(ctx, {
                 type: 'pie',
@@ -118,7 +180,7 @@ $(document).ready(function () {
                     labels: rows.map(row => row.items),
                     datasets: [{
                         label: 'number of items sold',
-                         data: rows.map(row => row.total),
+                        data: rows.map(row => row.total),
 
                         backgroundColor: () => {
                             var colors = [];

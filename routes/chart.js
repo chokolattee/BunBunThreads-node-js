@@ -1,15 +1,11 @@
 const express = require('express');
-
 const router = express.Router();
+const { addressChart, salesChart, itemsChart } = require('../controllers/chart');
+const { isAuthenticatedUser, authorizeRoles } = require('../middlewares/auth');
 
 
-const {addressChart, salesChart, itemsChart} = require('../controllers/chart')
-
-router.get('/address-chart', addressChart)
-router.get('/sales-chart', salesChart)
-router.get('/items-chart', itemsChart)
+router.get('/address-chart', isAuthenticatedUser, authorizeRoles('Admin'), addressChart);
+router.get('/sales-chart', isAuthenticatedUser, authorizeRoles('Admin'), salesChart);
+router.get('/items-chart', isAuthenticatedUser, authorizeRoles('Admin'), itemsChart);
 
 module.exports = router;
-
-
-

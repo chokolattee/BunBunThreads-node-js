@@ -1,4 +1,39 @@
-$(document).ready(function() {
+$(document).ready(function () {
+    // Check if user is authorized to access this page
+    function checkAdminAccess() {
+        const userRole = localStorage.getItem('userRole');
+        const token = localStorage.getItem('token');
+
+        // If no token, redirect to login
+        if (!token) {
+            bootbox.alert({
+                message: "Please log in to access this page.",
+                callback: function () {
+                    window.location.href = 'login.html';
+                }
+            });
+            return false;
+        }
+
+        // If user is not Admin, show error and redirect
+        if (userRole !== 'Admin') {
+            bootbox.alert({
+                message: "Access Denied: You do not have permission to access this page. Only administrators can manage reviews.",
+                callback: function () {
+                    window.location.href = 'home.html';
+                }
+            });
+            return false;
+        }
+
+        return true;
+    }
+
+    // Check access before initializing the page
+    if (!checkAdminAccess()) {
+        return;
+    }
+
     const API_BASE_URL = 'http://localhost:3000';
     let currentViewMode = 'pagination';
     let currentPage = 1;
@@ -8,6 +43,36 @@ $(document).ready(function() {
     let isLoading = false;
     let hasMoreData = true;
     let currentFilter = 'all';
+
+    // Add authorization header to all AJAX requests
+    $.ajaxSetup({
+        beforeSend: function (xhr) {
+            const token = localStorage.getItem('token');
+            if (token) {
+                xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+            }
+        },
+        error: function (xhr, status, error) {
+            // Handle unauthorized access
+            if (xhr.status === 401) {
+                bootbox.alert({
+                    message: "Your session has expired. Please log in again.",
+                    callback: function () {
+                        localStorage.clear();
+                        window.location.href = 'login.html';
+                    }
+                });
+            } else if (xhr.status === 403) {
+                bootbox.alert({
+                    message: "Access Denied: You do not have permission to perform this action.",
+                    callback: function () {
+                        window.location.href = 'home.html';
+                    }
+                });
+            }
+        }
+    });
+
 
     // Helper function to format dates
     function formatDate(dateString) {
@@ -63,9 +128,9 @@ $(document).ready(function() {
     function fetchReviews(filter = 'all') {
         isLoading = true;
         $('#loading-spinner').show();
-        
+
         let endpoint = '/api/reviews';
-        
+
         if (filter === 'deleted') {
             endpoint = '/api/reviews/admin';
         } else if (filter === 'active') {
@@ -76,7 +141,7 @@ $(document).ready(function() {
             url: endpoint,
             method: 'GET',
             dataType: 'json',
-            success: function(response) {
+            success: function (response) {
                 allReviews = response.rows;
                 filteredReviews = [...allReviews];
                 renderReviews();
@@ -84,11 +149,11 @@ $(document).ready(function() {
                     setupPagination();
                 }
             },
-            error: function(xhr, status, error) {
+            error: function (xhr, status, error) {
                 console.error('Error fetching reviews:', error);
                 Swal.fire('Error', 'Failed to fetch reviews', 'error');
             },
-            complete: function() {
+            complete: function () {
                 isLoading = false;
                 $('#loading-spinner').hide();
             }
@@ -165,7 +230,7 @@ $(document).ready(function() {
     }
 
     // Handle pagination clicks
-    $(document).on('click', '.page-link', function(e) {
+    $(document).on('click', '.page-link', function (e) {
         e.preventDefault();
         const page = parseInt($(this).data('page'));
         if (!isNaN(page)) {
@@ -176,13 +241,13 @@ $(document).ready(function() {
     });
 
     // View mode toggle handler
-    $('.view-option').click(function() {
+    $('.view-option').click(function () {
         const viewMode = $(this).data('view');
         if (viewMode !== currentViewMode) {
             currentViewMode = viewMode;
             $('.view-option').removeClass('active');
             $(this).addClass('active');
-            
+
             // Toggle UI elements
             if (viewMode === 'infinite') {
                 $('#pagination-container').hide();
@@ -192,7 +257,7 @@ $(document).ready(function() {
                 $('#scroll-info').hide();
                 currentPage = 1;
             }
-            
+
             renderReviews();
             if (viewMode === 'pagination') {
                 setupPagination();
@@ -201,24 +266,19 @@ $(document).ready(function() {
     });
 
     // Filter button click handler
-    $('.filter-btn').click(function() {
+    $('.filter-btn').click(function () {
         $('.filter-btn').removeClass('active');
         $(this).addClass('active');
         currentFilter = $(this).data('filter');
         fetchReviews(currentFilter);
     });
 
-    // Refresh button click handler
-    $('#refreshBtn').click(function() {
-        fetchReviews(currentFilter);
-    });
-
     // Search functionality
-    $('#searchBtn').click(function() {
+    $('#searchBtn').click(function () {
         performSearch();
     });
 
-    $('#searchInput').keypress(function(e) {
+    $('#searchInput').keypress(function (e) {
         if (e.which === 13) {
             performSearch();
         }
@@ -227,7 +287,7 @@ $(document).ready(function() {
     function performSearch() {
         const searchTerm = $('#searchInput').val().toLowerCase();
         if (searchTerm) {
-            filteredReviews = allReviews.filter(review => 
+            filteredReviews = allReviews.filter(review =>
                 (review.customer_first_name && review.customer_first_name.toLowerCase().includes(searchTerm)) ||
                 (review.customer_last_name && review.customer_last_name.toLowerCase().includes(searchTerm)) ||
                 (review.item_name && review.item_name.toLowerCase().includes(searchTerm)) ||
@@ -237,7 +297,7 @@ $(document).ready(function() {
         } else {
             filteredReviews = [...allReviews];
         }
-        
+
         currentPage = 1;
         renderReviews();
         if (currentViewMode === 'pagination') {
@@ -246,9 +306,9 @@ $(document).ready(function() {
     }
 
     // Infinite scroll handler
-    $(window).scroll(function() {
+    $(window).scroll(function () {
         if (currentViewMode !== 'infinite' || isLoading || !hasMoreData) return;
-        
+
         if ($(window).scrollTop() + $(window).height() > $(document).height() - 100) {
             // Simulate loading more data (in a real app, you'd make an API call)
             $('#loading-spinner').show();
@@ -259,7 +319,7 @@ $(document).ready(function() {
     });
 
     // Export to Excel
-    $('#exportExcel').click(function() {
+    $('#exportExcel').click(function () {
         const data = filteredReviews.map(review => ({
             'Review ID': review.review_id,
             'Order ID': review.orderinfo_id,
@@ -278,21 +338,21 @@ $(document).ready(function() {
     });
 
     // Export to PDF
-    $('#exportPdf').click(function() {
+    $('#exportPdf').click(function () {
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-        
+
         const headers = [
-            "Review ID", 
-            "Order ID", 
-            "Customer", 
-            "Item", 
-            "Rating", 
-            "Review", 
-            "Date", 
+            "Review ID",
+            "Order ID",
+            "Customer",
+            "Item",
+            "Rating",
+            "Review",
+            "Date",
             "Status"
         ];
-        
+
         const data = filteredReviews.map(review => [
             review.review_id,
             review.orderinfo_id,
@@ -303,7 +363,7 @@ $(document).ready(function() {
             formatDate(review.created_at),
             review.deleted_at ? 'Deleted' : 'Active'
         ]);
-        
+
         doc.autoTable({
             head: [headers],
             body: data,
@@ -313,14 +373,14 @@ $(document).ready(function() {
                 textColor: 255
             }
         });
-        
+
         doc.save('reviews.pdf');
     });
 
     // Delete review
-    $(document).on('click', '.delete-btn', function() {
+    $(document).on('click', '.delete-btn', function () {
         const reviewId = $(this).data('id');
-        
+
         Swal.fire({
             title: 'Are you sure?',
             text: "You won't be able to revert this!",
@@ -334,7 +394,7 @@ $(document).ready(function() {
                 $.ajax({
                     url: `/api/reviews/delete/${reviewId}`,
                     method: 'PUT',
-                    success: function() {
+                    success: function () {
                         Swal.fire(
                             'Deleted!',
                             'The review has been deleted.',
@@ -342,7 +402,7 @@ $(document).ready(function() {
                         );
                         fetchReviews(currentFilter);
                     },
-                    error: function(xhr, status, error) {
+                    error: function (xhr, status, error) {
                         console.error('Error deleting review:', error);
                         Swal.fire('Error', 'Failed to delete review', 'error');
                     }
@@ -352,9 +412,9 @@ $(document).ready(function() {
     });
 
     // Restore review
-    $(document).on('click', '.restore-btn', function() {
+    $(document).on('click', '.restore-btn', function () {
         const reviewId = $(this).data('id');
-        
+
         Swal.fire({
             title: 'Are you sure?',
             text: "This review will be restored.",
@@ -368,7 +428,7 @@ $(document).ready(function() {
                 $.ajax({
                     url: `/api/reviews/restore/${reviewId}`,
                     method: 'PATCH',
-                    success: function() {
+                    success: function () {
                         Swal.fire(
                             'Restored!',
                             'The review has been restored.',
@@ -376,7 +436,7 @@ $(document).ready(function() {
                         );
                         fetchReviews(currentFilter);
                     },
-                    error: function(xhr, status, error) {
+                    error: function (xhr, status, error) {
                         console.error('Error restoring review:', error);
                         Swal.fire('Error', 'Failed to restore review', 'error');
                     }
@@ -385,6 +445,5 @@ $(document).ready(function() {
         });
     });
 
-    // Initial load
     fetchReviews();
 });
