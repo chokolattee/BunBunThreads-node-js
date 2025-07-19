@@ -92,7 +92,7 @@ $(document).ready(function () {
                 item_id: id,
                 description,
                 price,
-                image: `${imageBaseUrl}${image}`, // Fixed: Use proper image base URL
+                image: `${imageBaseUrl}${image}`, 
                 stock,
                 quantity: qty
             });

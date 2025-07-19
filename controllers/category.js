@@ -116,7 +116,6 @@ exports.createCategory = (req, res, next) => {
                 });
             }
 
-            // Return success response
             return res.status(201).json({
                 success: true,
                 message: 'Category created successfully',
@@ -196,7 +195,6 @@ exports.deleteCategory = (req, res) => {
             }
 
             if (result[0].count > 0) {
-                // Soft delete items first
                 const softDeleteItemsSql = 'UPDATE item SET deleted_at = NOW() WHERE category_id = ? AND deleted_at IS NULL';
                 connection.execute(softDeleteItemsSql, [categoryId], (itemErr, itemResult) => {
                     if (itemErr) {
@@ -210,7 +208,6 @@ exports.deleteCategory = (req, res) => {
                     softDeleteCategory();
                 });
             } else {
-                // No items to soft delete, just soft delete the category
                 softDeleteCategory();
             }
 
