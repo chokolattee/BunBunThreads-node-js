@@ -1,0 +1,805 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>User Management - Cozy Crochet</title>
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+    integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous" />
+
+  <link href="https://use.fontawesome.com/releases/v5.0.6/css/all.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&family=Nunito:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.16.1/sweetalert2.css"
+    integrity="sha512-fjO3Vy3QodX9c6G9AUmr6WuIaEPdGRxBjD7gjatG5gGylzYyrEq3U0q+smkG6CwIY0L8XALRFHh4KPHig0Q1ug=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"
+    integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.5.2/bootbox.min.js"
+    integrity="sha512-RdSPYh1WA6BF0RhpisYJVYkOyTzK4HwofJ3Q7ivt/jkpW6Vc8AurL1R+4AUcvn9IwEKAPm/fk7qFZW3OuiUDeg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.16.1/sweetalert2.min.js"
+    integrity="sha512-LGHBR+kJ5jZSIzhhdfytPoEHzgaYuTRifq9g5l6ja6/k9NAOsAi5dQh4zQF6JIRB8cAYxTRedERUF+97/KuivQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <style>
+        :root {
+            --primary-brown: #8B4513;
+            --light-brown: #D2B48C;
+            --dark-brown: #654321;
+            --cream: #F5F5DC;
+            --warm-white: #FFF8E7;
+            --soft-brown: #DEB887;
+            --accent-brown: #A0522D;
+        }
+
+        * {
+            transition: all 0.3s ease;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--warm-white) 0%, var(--cream) 100%);
+            font-family: 'Comfortaa', sans-serif; 
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Yarn ball decorations */
+        body::before {
+            content: "🧶";
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            font-size: 2rem;
+            opacity: 0.3;
+            animation: float 6s ease-in-out infinite;
+            z-index: -1;
+        }
+
+        body::after {
+            content: "✂️";
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            opacity: 0.3;
+            animation: float 8s ease-in-out infinite reverse;
+            z-index: -1;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .container-fluid {
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-card {
+            background: var(--warm-white);
+            border: none;
+            border-radius: 25px;
+            box-shadow: 
+                0 8px 25px rgba(139, 69, 19, 0.1),
+                0 0 0 1px rgba(139, 69, 19, 0.05);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .main-card::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(139, 69, 19, 0.05) 0%, transparent 70%);
+            z-index: -1;
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-brown) 0%, var(--accent-brown) 100%);
+            border: none;
+            border-radius: 25px 25px 0 0 !important;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header::before {
+            content: "🪡 ✨ 🧵 ✨ 🪡";
+            position: absolute;
+            top: 50%;
+            right: 2rem;
+            transform: translateY(-50%);
+            opacity: 0.2;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        .card-header h3 {
+            font-family: 'Comfortaa', sans-serif;
+            font-weight: 600;
+            margin: 0;
+            color: var(--warm-white);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 2;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        /* Buttons */
+        .btn-craft-primary {
+            background: linear-gradient(135deg, var(--primary-brown) 0%, var(--accent-brown) 100%);
+            border: none;
+            border-radius: 20px;
+            padding: 0.7rem 1.5rem;
+            font-weight: 500;
+            color: white;
+            box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-craft-primary::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-craft-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-craft-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 69, 19, 0.4);
+            color: white;
+        }
+
+        .btn-craft-secondary {
+            background: var(--light-brown);
+            border: 2px solid var(--soft-brown);
+            border-radius: 15px;
+            color: var(--dark-brown);
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+        }
+
+        .btn-craft-secondary:hover {
+            background: var(--soft-brown);
+            transform: translateY(-1px);
+            color: var(--dark-brown);
+            border-color: var(--accent-brown);
+        }
+
+        /* Search container */
+        .search-container {
+            position: relative;
+        }
+
+        .search-container .input-group {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(139, 69, 19, 0.1);
+        }
+
+        .search-container input {
+            border: none;
+            background: var(--cream);
+            padding: 0.7rem 1rem;
+            font-weight: 400;
+        }
+
+        .search-container input:focus {
+            box-shadow: none;
+            background: white;
+        }
+
+        .search-container .btn {
+            background: var(--soft-brown);
+            border: none;
+            color: var(--dark-brown);
+        }
+
+        .search-container .btn:hover {
+            background: var(--accent-brown);
+            color: white;
+        }
+
+        /* View selector */
+        .view-selector {
+            background: var(--cream);
+            border-radius: 15px;
+            padding: 1rem;
+            border: 1px solid var(--light-brown);
+            margin-bottom: 1.5rem;
+        }
+
+        .view-selector label {
+            font-weight: 600;
+            color: var(--dark-brown);
+            margin-bottom: 0.5rem;
+        }
+
+        .view-selector select {
+            border: 2px solid var(--soft-brown);
+            border-radius: 10px;
+            background: white;
+            color: var(--dark-brown);
+        }
+
+        .view-selector select:focus {
+            border-color: var(--accent-brown);
+            box-shadow: 0 0 0 0.2rem rgba(139, 69, 19, 0.2);
+        }
+
+        /* Table styling */
+        .table-container {
+            background: white;
+            border-radius: 20px;
+            padding: 1rem;
+            box-shadow: 0 4px 15px rgba(139, 69, 19, 0.08);
+            overflow-x: auto;
+            overflow-y: visible;
+        }
+
+        .table {
+            margin: 0;
+            border-radius: 15px;
+            min-width: 900px; /* Ensures table doesn't get too compressed */
+            white-space: nowrap;
+        }
+
+        .table thead th {
+            background: linear-gradient(135deg, var(--dark-brown) 0%, var(--primary-brown) 100%);
+            color: white;
+            border: none;
+            padding: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85rem;
+        }
+
+        .table tbody tr {
+            border-bottom: 1px solid var(--cream);
+            transition: all 0.3s ease;
+        }
+
+        .table tbody tr:hover {
+            background: var(--warm-white);
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(139, 69, 19, 0.1);
+        }
+
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border: none;
+        }
+
+        /* Role and status badges */
+        .role-badge {
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .role-admin {
+            background: linear-gradient(135deg, #ffc107 0%, #ffb300 100%);
+            color: var(--dark-brown);
+            box-shadow: 0 2px 8px rgba(255, 193, 7, 0.3);
+        }
+
+        .role-admin::before {
+            content: "👑";
+        }
+
+        .role-user {
+            background: linear-gradient(135deg, var(--soft-brown) 0%, var(--light-brown) 100%);
+            color: var(--dark-brown);
+            box-shadow: 0 2px 8px rgba(210, 180, 140, 0.3);
+        }
+
+        .role-user::before {
+            content: "🧶";
+        }
+
+        .status-badge {
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .status-active {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        .status-active::before {
+            content: "✨";
+        }
+
+        .status-deactivated {
+            background: linear-gradient(135deg, #dc3545 0%, #e63946 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        }
+
+        .status-deactivated::before {
+            content: "💤";
+        }
+
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.3rem;
+            justify-content: center;
+            min-width: 160px; /* Ensures actions column has enough space */
+        }
+
+        .action-buttons .btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit {
+            background: var(--soft-brown);
+            color: var(--dark-brown);
+        }
+
+        .btn-edit:hover {
+            background: var(--accent-brown);
+            color: white;
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .btn-role {
+            background: #ffc107;
+            color: var(--dark-brown);
+        }
+
+        .btn-role:hover {
+            background: #ffb300;
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        .btn-status {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .btn-status:hover {
+            background: #138496;
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        /* Modals */
+        .modal-content {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(139, 69, 19, 0.2);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--light-brown) 0%, var(--soft-brown) 100%);
+            border: none;
+            border-radius: 20px 20px 0 0;
+            padding: 1.5rem;
+        }
+
+        .modal-header h5 {
+            font-family: 'Comfortaa', sans-serif;
+            font-weight: 600;
+            color: var(--dark-brown);
+            margin: 0;
+        }
+
+        .modal-body {
+            padding: 2rem;
+            background: var(--warm-white);
+        }
+
+        .modal-footer {
+            background: var(--warm-white);
+            border: none;
+            border-radius: 0 0 20px 20px;
+            padding: 1.5rem 2rem;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--dark-brown);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border: 2px solid var(--cream);
+            border-radius: 15px;
+            padding: 0.7rem 1rem;
+            background: white;
+            color: var(--dark-brown);
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-brown);
+            box-shadow: 0 0 0 0.2rem rgba(139, 69, 19, 0.2);
+        }
+
+        /* Pagination */
+        .pagination-container {
+            margin-top: 2rem;
+        }
+
+        .pagination .page-item .page-link {
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 2px;
+            background: var(--cream);
+            color: var(--dark-brown);
+            font-weight: 500;
+        }
+
+        .pagination .page-item.active .page-link {
+            background: var(--primary-brown);
+            color: white;
+            box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+        }
+
+        .pagination .page-item .page-link:hover {
+            background: var(--soft-brown);
+            color: var(--dark-brown);
+            transform: scale(1.1);
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            text-align: center;
+            padding: 2rem;
+            color: var(--accent-brown);
+        }
+
+        .spinner-border {
+            border-color: var(--light-brown);
+            border-right-color: var(--accent-brown);
+        }
+
+        /* Scroll info */
+        .scroll-info {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, var(--primary-brown) 0%, var(--accent-brown) 100%);
+            color: white;
+            padding: 0.7rem 1.2rem;
+            border-radius: 25px;
+            display: none;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .card-header {
+                padding: 1.5rem;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .d-flex {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .search-container {
+                width: 100%;
+            }
+            
+            .action-buttons {
+                flex-wrap: wrap;
+            }
+            
+            .table-responsive {
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Custom scrollbar for table */
+        .table-responsive {
+            scrollbar-width: thin;
+            scrollbar-color: var(--soft-brown) var(--cream);
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-track {
+            background: var(--cream);
+            border-radius: 4px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: var(--soft-brown);
+            border-radius: 4px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-brown);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--cream);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--soft-brown);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-brown);
+        }
+    </style>
+</head>
+
+<body>
+  <div class="container-fluid py-4">
+    <div class="card main-card">
+      <div class="card-header">
+        <h3 class="mb-0">🧶  User Management ✨</h3>
+      </div>
+      <div class="card-body">
+        <div class="d-flex justify-content-between mb-4">
+          <button type="button" class="btn btn-craft-primary" data-toggle="modal" data-target="#userModal">
+            <i class="fas fa-plus"></i> Add New Admin 👑
+          </button>
+
+          <div class="search-container">
+            <div class="input-group">
+              <input type="text" id="userSearch" class="form-control" placeholder="Search users... 🔍">
+              <div class="input-group-append">
+                <button class="btn" type="button" id="searchButton">
+                  <i class="fas fa-search"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- View Type Selector -->
+        <div class="view-selector" id="viewTypeSelector">
+          <label for="viewType"> View Type:</label>
+          <select class="form-control" id="viewType">
+            <option value="pagination">📄 Pagination</option>
+            <option value="infinite">♾️ Infinite Scroll</option>
+          </select>
+        </div>
+
+        <div class="table-container">
+          <div class="table-responsive">
+            <table id="utable" class="table table-hover" style="width:100%">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>👤 Name</th>
+                  <th>📧 Email</th>
+                  <th>🏠 Address</th>
+                  <th>🏘️ Town</th>
+                  <th>📱 Phone</th>
+                  <th>👑 Role</th>
+                  <th>✨ Status</th>
+                  <th>🛠️ Actions</th>
+                </tr>
+              </thead>
+              <tbody id="ubody">
+                <!-- Users will be loaded here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Pagination Container -->
+        <div id="paginationContainer" class="pagination-container">
+          <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center" id="pagination">
+              <!-- Pagination will be generated here -->
+            </ul>
+          </nav>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div id="loadingSpinner" class="loading-spinner">
+          <div class="spinner-border" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+          <div class="mt-2">🧶 Loading more users...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll Info -->
+  <div id="scrollInfo" class="scroll-info">
+    🧶 Scroll to load more users ✨
+  </div>
+
+ <!-- Add User Modal -->
+<div class="modal fade" id="userModal" tabindex="-1" role="dialog" aria-labelledby="userModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="userModalLabel">✨ Add New Admin 👑</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form id="addUserForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="add_name">👤 Name *</label>
+            <input type="text" class="form-control" id="add_name" name="name" required>
+          </div>
+          <div class="form-group">
+            <label for="add_email">📧 Email *</label>
+            <input type="email" class="form-control" id="add_email" name="email" required>
+          </div>
+          <div class="form-group">
+            <label for="add_password">🔒 Password *</label>
+            <input type="password" class="form-control" id="add_password" name="password" required>
+            <small class="form-text text-muted">🔐 Password must be at least 8 characters long</small>
+          </div>
+          <input type="hidden" name="role" value="admin">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-craft-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-craft-primary">Add Admin ✨</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+  <!-- Role Change Modal -->
+  <div class="modal fade" id="roleModal" tabindex="-1" role="dialog" aria-labelledby="roleModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="roleModalLabel">👑 Change User Role</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="roleForm">
+            <div class="form-group">
+              <label for="new_role">🎭 Select New Role *</label>
+              <select class="form-control" id="new_role" name="new_role" required>
+                <option value="">Select Role</option>
+                <option value="admin">👑 Admin</option>
+                <option value="user">🧶 User</option>
+              </select>
+            </div>
+            <input type="hidden" id="role_user_id" name="role_user_id">
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-craft-secondary" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-craft-primary" id="roleSubmit">Change Role ✨</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Change Modal -->
+  <div class="modal fade" id="statusModal" tabindex="-1" role="dialog" aria-labelledby="statusModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="statusModalLabel">✨ Change User Status</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="statusForm">
+            <div class="form-group">
+              <label for="new_status">🌟 Select New Status *</label>
+              <select class="form-control" id="new_status" name="new_status" required>
+                <option value="">Select Status</option>
+                <option value="active">✨ Active</option>
+                <option value="deactivated">💤 Deactivated</option>
+              </select>
+            </div>
+            <input type="hidden" id="status_user_id" name="status_user_id">
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-craft-secondary" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-craft-primary" id="statusSubmit">Change Status ✨</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"
+    integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+    integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+    crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+    integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.16.1/sweetalert2.min.js"
+    integrity="sha512-LGHBR+kJ5jZSIzhhdfytPoEHzgaYuTRifq9g5l6ja6/k9NAOsAi5dQh4zQF6JIRB8cAYxTRedERUF+97/KuivQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.5.2/bootbox.min.js"
+    integrity="sha512-RdSPYh1WA6BF0RhpisYJVYkOyTzK4HwofJ3Q7ivt/jkpW6Vc8AurL1R+4AUcvn9IwEKAPm/fk7qFZW3OuiUDeg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+  <script src="js/user.js"></script>
+</body>
+</html>

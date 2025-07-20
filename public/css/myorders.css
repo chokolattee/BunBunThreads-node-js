@@ -1,0 +1,416 @@
+:root {
+  --primary-brown: #8B4513;
+  --light-brown: #D2B48C;
+  --dark-brown: #654321;
+  --cream: #F5F5DC;
+  --warm-white: #FFF8E7;
+  --soft-brown: #DEB887;
+  --accent-brown: #A0522D;
+}
+
+/* Beautiful crochet-inspired background */
+body {
+  background: linear-gradient(135deg, var(--warm-white) 0%, var(--cream) 50%, var(--soft-brown) 100%);
+  position: relative;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    /* Yarn ball pattern */
+    radial-gradient(circle at 20% 20%, rgba(139, 69, 19, 0.03) 2px, transparent 3px),
+    radial-gradient(circle at 80% 40%, rgba(210, 180, 140, 0.04) 3px, transparent 4px),
+    radial-gradient(circle at 40% 80%, rgba(160, 82, 45, 0.03) 2px, transparent 3px),
+    radial-gradient(circle at 90% 70%, rgba(139, 69, 19, 0.02) 4px, transparent 5px),
+    /* Crochet stitch pattern */
+    repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 20px,
+      rgba(139, 69, 19, 0.01) 20px,
+      rgba(139, 69, 19, 0.01) 22px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 30px,
+      rgba(210, 180, 140, 0.015) 30px,
+      rgba(210, 180, 140, 0.015) 32px
+    );
+  background-size: 60px 60px, 80px 80px, 100px 100px, 120px 120px, 40px 40px, 50px 50px;
+  animation: floatingPattern 60s linear infinite;
+  z-index: -1;
+}
+
+/* Floating decorative elements */
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    /* Floating yarn balls */
+    radial-gradient(circle at 10% 10%, rgba(139, 69, 19, 0.05) 8px, transparent 9px),
+    radial-gradient(circle at 90% 90%, rgba(160, 82, 45, 0.04) 12px, transparent 13px),
+    radial-gradient(circle at 70% 20%, rgba(210, 180, 140, 0.06) 6px, transparent 7px),
+    radial-gradient(circle at 30% 70%, rgba(139, 69, 19, 0.03) 10px, transparent 11px),
+    radial-gradient(circle at 50% 50%, rgba(245, 245, 220, 0.1) 15px, transparent 16px);
+  background-size: 200px 200px, 250px 250px, 180px 180px, 220px 220px, 300px 300px;
+  animation: floatingElements 90s ease-in-out infinite alternate;
+  z-index: -1;
+}
+
+@keyframes floatingPattern {
+  0% { transform: translateX(0) translateY(0); }
+  25% { transform: translateX(-10px) translateY(-15px); }
+  50% { transform: translateX(5px) translateY(-10px); }
+  75% { transform: translateX(-5px) translateY(5px); }
+  100% { transform: translateX(0) translateY(0); }
+}
+
+@keyframes floatingElements {
+  0% { transform: scale(1) rotate(0deg); opacity: 0.3; }
+  50% { transform: scale(1.05) rotate(2deg); opacity: 0.5; }
+  100% { transform: scale(0.95) rotate(-1deg); opacity: 0.2; }
+}
+
+/* Container modifications for card grid */
+#ordersList {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 25px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Enhanced order card design */
+.order-card {
+  border: none;
+  border-radius: 20px;
+  padding: 25px;
+  margin-bottom: 0; /* Remove since we're using grid gap */
+  background: linear-gradient(135deg, var(--warm-white) 0%, var(--cream) 100%);
+  box-shadow: 0 8px 25px rgba(139, 69, 19, 0.15);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  position: relative;
+  overflow: hidden;
+  border-left: 6px solid var(--primary-brown);
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 450px;
+}
+
+/* Decorative yarn ball pattern */
+.order-card::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  right: -30px;
+  width: 80px;
+  height: 80px;
+  background: radial-gradient(circle, var(--light-brown) 30%, transparent 31%);
+  background-size: 20px 20px;
+  opacity: 0.1;
+  transform: rotate(45deg);
+}
+
+.order-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(139, 69, 19, 0.25);
+  background: linear-gradient(135deg, var(--cream) 0%, var(--soft-brown) 100%);
+}
+
+/* Enhanced order header */
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px dashed var(--light-brown);
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  position: relative;
+  min-height: 80px;
+  flex-shrink: 0;
+}
+
+.order-header h5 {
+  color: var(--dark-brown);
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 1px 1px 2px rgba(139, 69, 19, 0.1);
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+/* Date and shipping info styling */
+.order-header .text-muted {
+  color: var(--accent-brown) !important;
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin: 4px 0;
+  display: block;
+}
+
+.order-header .order-date-shipping {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  margin-right: 15px;
+}
+
+.order-header .order-date-shipping > div {
+  min-height: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Order items section */
+.order-items {
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(245, 245, 220, 0.6);
+  border-radius: 15px;
+  border: 1px solid rgba(139, 69, 19, 0.1);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.order-items h6 {
+  color: var(--dark-brown);
+  font-weight: 600;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  height: 24px;
+}
+
+.order-items h6::before {
+  content: '🧶';
+  font-size: 1.2em;
+}
+
+.order-items-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: 120px;
+}
+
+.order-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px dotted var(--light-brown);
+  transition: background-color 0.2s ease;
+  min-height: 70px;
+  flex-shrink: 0;
+}
+
+.order-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.order-item:hover {
+  background-color: rgba(139, 69, 19, 0.05);
+  border-radius: 8px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+/* Item content layout */
+.order-item > div:first-child {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 50px;
+  justify-content: flex-start;
+}
+
+.order-item .item-name {
+  color: var(--dark-brown);
+  font-weight: 500;
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.order-item .text-muted {
+  color: var(--accent-brown) !important;
+  font-size: 0.85em;
+  background: var(--light-brown);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 500;
+  display: inline-block;
+  width: fit-content;
+  margin: 0;
+}
+
+.order-item .item-price {
+  color: var(--primary-brown);
+  font-weight: 700;
+  font-size: 1.05em;
+  min-width: 80px;
+  text-align: right;
+  flex-shrink: 0;
+  margin: 0;
+  align-self: flex-start;
+}
+
+/* Button styling within items */
+.order-item .btn-outline-primary {
+  margin-top: 8px;
+  align-self: flex-start;
+}
+
+/* Enhanced status badges */
+.order-status {
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 25px;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.order-status.Pending {
+  background: linear-gradient(135deg, #ff8c00, #ffa500);
+  color: white;
+}
+
+.order-status.Completed,
+.order-status.Delivered {
+  background: linear-gradient(135deg, #228b22, #32cd32);
+  color: white;
+}
+
+.order-status.Cancelled,
+.order-status.Rejected {
+  background: linear-gradient(135deg, #dc143c, #ff6b6b);
+  color: white;
+}
+
+.order-status.InProgress {
+  background: linear-gradient(135deg, #1e90ff, #4169e1);
+  color: white;
+}
+
+/* Create Review buttons enhancement */
+.btn-outline-primary {
+  background: var(--warm-white);
+  border: 2px solid var(--primary-brown);
+  color: var(--primary-brown);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+}
+
+.btn-outline-primary:hover {
+  background: var(--primary-brown);
+  border-color: var(--primary-brown);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+}
+
+/* Main heading enhancement */
+.container h2 {
+  color: var(--dark-brown);
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+  font-size: 2.5rem;
+  text-shadow: 2px 2px 4px rgba(139, 69, 19, 0.1);
+}
+
+.container h2::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-brown), var(--light-brown), var(--primary-brown));
+  border-radius: 2px;
+}
+
+/* Shipping info enhancement */
+.order-card .shipping-info {
+  background: rgba(139, 69, 19, 0.05);
+  padding: 12px 15px;
+  border-radius: 10px;
+  margin-top: 15px;
+  border-left: 4px solid var(--accent-brown);
+  flex-shrink: 0;
+  min-height: 45px;
+  display: flex;
+  align-items: center;
+}
+
+.order-card .shipping-info .shipping-text {
+  color: var(--dark-brown);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  #ordersList {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 0 15px;
+  }
+  
+  .order-card {
+    padding: 20px;
+  }
+  
+  .container h2 {
+    font-size: 2rem;
+  }
+  
+  .order-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .order-item {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  
+  .order-item .item-quantity {
+    margin-right: 0;
+    align-self: flex-end;
+  }
+}

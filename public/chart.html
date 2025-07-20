@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+      integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+      crossorigin="anonymous"
+    />
+
+    <!-- SweetAlert2 CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.16.1/sweetalert2.min.css"
+      integrity="sha512-6RB6Yzn0B6N39aK5vY9XyxZ8+kFqBFP5N1+1QqBwJYFQK5Z7R5Z2CgJfZ2W9c7KZzN6ZzX/j8eenQO5U4J5bYw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;700&family=Nunito:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+      :root {
+        --primary-brown: #8B4513;
+        --light-brown: #D2B48C;
+        --dark-brown: #654321;
+        --cream: #F5F5DC;
+        --warm-white: #FFF8E7;
+        --soft-brown: #DEB887;
+        --accent-brown: #A0522D;
+      }
+
+      * {
+        transition: all 0.3s ease;
+      }
+
+      body {
+        background: linear-gradient(135deg, var(--warm-white) 0%, var(--cream) 100%);
+        font-family: 'Nunito', sans-serif;
+        min-height: 100vh;
+        padding: 20px;
+        position: relative;
+      }
+
+      body::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image: 
+          radial-gradient(circle at 20% 80%, rgba(139, 69, 19, 0.03) 0%, transparent 50%),
+          radial-gradient(circle at 80% 20%, rgba(210, 180, 140, 0.05) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      .dashboard-header {
+        margin-bottom: 40px;
+        padding: 30px;
+        background: linear-gradient(135deg, var(--primary-brown) 0%, var(--accent-brown) 100%);
+        border-radius: 25px;
+        box-shadow: 
+          0 10px 30px rgba(139, 69, 19, 0.2),
+          inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .dashboard-header::before {
+        content: '✨';
+        position: absolute;
+        top: 20px;
+        right: 30px;
+        font-size: 24px;
+        animation: sparkle 2s ease-in-out infinite;
+      }
+
+      .dashboard-header::after {
+        content: '🤎';
+        position: absolute;
+        top: 20px;
+        left: 30px;
+        font-size: 24px;
+        animation: bounce 2s ease-in-out infinite;
+      }
+
+      @keyframes sparkle {
+        0%, 100% { opacity: 0.5; transform: scale(1); }
+        50% { opacity: 1; transform: scale(1.2); }
+      }
+
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-5px); }
+      }
+
+      .dashboard-header h1 {
+        font-family: 'Comfortaa', cursive;
+        color: var(--warm-white);
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        font-size: 2.8rem;
+      }
+
+      .dashboard-header p {
+        color: var(--cream);
+        margin: 0;
+        font-weight: 400;
+        font-size: 1.1rem;
+        opacity: 0.9;
+      }
+
+      .chart-container {
+        background: linear-gradient(145deg, var(--warm-white) 0%, var(--cream) 100%);
+        border-radius: 20px;
+        box-shadow: 
+          0 8px 25px rgba(139, 69, 19, 0.1),
+          inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        padding: 25px;
+        margin-bottom: 30px;
+        border: 3px solid var(--light-brown);
+        position: relative;
+        overflow: hidden;
+        transform: translateY(0);
+      }
+
+      .chart-container:hover {
+        transform: translateY(-5px);
+        box-shadow: 
+          0 15px 35px rgba(139, 69, 19, 0.15),
+          inset 0 1px 0 rgba(255, 255, 255, 0.8);
+      }
+
+      .chart-container::before {
+        content: '';
+        position: absolute;
+        top: -2px;
+        left: -2px;
+        right: -2px;
+        bottom: -2px;
+        background: linear-gradient(45deg, var(--primary-brown), var(--accent-brown), var(--soft-brown), var(--light-brown));
+        border-radius: 22px;
+        z-index: -1;
+        animation: borderGlow 3s ease-in-out infinite;
+      }
+
+      @keyframes borderGlow {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 0.8; }
+      }
+
+      .chart-title {
+        font-family: 'Comfortaa', cursive;
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: var(--dark-brown);
+        text-align: center;
+        position: relative;
+        padding-bottom: 10px;
+      }
+
+      .chart-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--primary-brown) 0%, var(--accent-brown) 100%);
+        border-radius: 2px;
+      }
+
+      .chart-wrapper {
+        position: relative;
+        height: 40vh;
+        width: 100%;
+        padding: 10px;
+        background: rgba(255, 248, 231, 0.3);
+        border-radius: 15px;
+        border: 2px dashed var(--soft-brown);
+      }
+
+      /* Special styling for items chart */
+      .chart-wrapper.items-chart {
+        height: 70vh;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        gap: 30px;
+      }
+
+      .items-legend {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 20px;
+        background: rgba(245, 245, 220, 0.5);
+        border-radius: 15px;
+        border: 2px solid var(--light-brown);
+        max-width: 40%;
+      }
+
+      .items-pie {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        max-width: 60%;
+        max-height: 90%;
+      }
+
+      .chart-wrapper.items-chart canvas {
+        max-width: 100% !important;
+        max-height: 400px !important;
+        width: auto !important;
+        height: auto !important;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 8px 12px;
+        background: rgba(255, 248, 231, 0.7);
+        border-radius: 8px;
+        border-left: 4px solid var(--accent-brown);
+        transition: all 0.3s ease;
+      }
+
+      .legend-item:hover {
+        background: rgba(255, 248, 231, 1);
+        transform: translateX(5px);
+        box-shadow: 0 2px 8px rgba(139, 69, 19, 0.1);
+      }
+
+      .legend-color {
+        width: 16px;
+        height: 16px;
+        border-radius: 3px;
+        margin-right: 12px;
+        border: 1px solid rgba(139, 69, 19, 0.3);
+      }
+
+      .legend-label {
+        font-weight: 600;
+        color: var(--dark-brown);
+        font-size: 0.9rem;
+      }
+
+      /* Cute decorative elements */
+      .chart-container:nth-child(1) .chart-title::before {
+        content: '📊 ';
+      }
+      
+      .chart-container:nth-child(2) .chart-title::before {
+        content: '💰 ';
+      }
+
+      .row:last-child .chart-container .chart-title::before {
+        content: '📈 ';
+      }
+
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 12px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: var(--cream);
+        border-radius: 6px;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, var(--primary-brown) 0%, var(--accent-brown) 100%);
+        border-radius: 6px;
+        border: 2px solid var(--cream);
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, var(--accent-brown) 0%, var(--dark-brown) 100%);
+      }
+
+      /* Responsive adjustments */
+      @media (max-width: 768px) {
+        .dashboard-header h1 {
+          font-size: 2.2rem;
+        }
+        
+        .chart-wrapper {
+          height: 300px;
+        }
+        
+        .chart-wrapper.items-chart {
+          height: 350px;
+          flex-direction: column;
+          gap: 20px;
+        }
+        
+        .items-legend, .items-pie {
+          max-width: 100%;
+         
+        }
+        
+        .items-legend {
+          order: 2;
+          padding: 15px;
+        }
+        
+        .items-pie {
+          order: 1;
+        }
+        
+        body {
+          padding: 15px;
+        }
+      }
+
+      /* Loading animation for charts */
+      .chart-wrapper::before {
+      
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: var(--accent-brown);
+        font-weight: 600;
+        z-index: 1;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%, 100% { opacity: 0.6; }
+        50% { opacity: 1; }
+      }
+    </style>
+
+    <title>Cute Analytics Dashboard </title>
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="dashboard-header">
+        <h1 class="display-4">Analytics Dashboard</h1>
+        <p class="lead">Cozy visualization of key metrics and performance indicators</p>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="chart-container">
+            <h3 class="chart-title">Address Distribution</h3>
+            <div class="chart-wrapper">
+              <canvas id="addressChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="chart-container">
+            <h3 class="chart-title">Sales Performance</h3>
+            <div class="chart-wrapper">
+              <canvas id="salesChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12">
+          <div class="chart-container">
+            <h3 class="chart-title">Item Analysis</h3>
+            <div class="chart-wrapper items-chart">
+              <div class="items-legend">
+                <div id="itemsLegend"></div>
+              </div>
+              <div class="items-pie">
+                <canvas id="itemsChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script
+      src="https://code.jquery.com/jquery-3.6.4.min.js"
+      integrity="sha256-oP6HI9z1XaZNBrJURtCoUT5SUnxFr8s3BzRl+cbzUq8="
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"
+      integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js"
+      integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- SweetAlert2 JS -->
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.16.1/sweetalert2.min.js"
+      integrity="sha512-LGHBR+kJ5jZSIzhhdfytPoEHzgaYuTRifq9g5l6ja6/k9NAOsAi5dQh4zQF6JIRB8cAYxTRedERUF+97/KuivQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+
+    <!-- Additional Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.19.3/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/5.5.2/bootbox.min.js"
+      integrity="sha512-RdSPYh1WA6BF0RhpisYJVYkOyTzK4HwofJ3Q7ivt/jkpW6Vc8AurL1R+4AUcvn9IwEKAPm/fk7qFZW3OuiUDeg=="
+      crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // Sample chart configuration to demonstrate the layout
+      document.addEventListener('DOMContentLoaded', function() {
+        // Sample data for demonstration
+        const itemsData = {
+          labels: ['Strawberry Key Holder', 'Crochet Coaster Set', 'Crochet Tote Bag', 'Crochet Cat Coaster Set', 'Cherry Bag Charm', 'Kawaii Coin Purse'],
+          datasets: [{
+            data: [25, 20, 18, 15, 12, 10],
+            backgroundColor: [
+              '#8B4513', // primary-brown
+              '#A0522D', // accent-brown
+              '#D2B48C', // light-brown
+              '#DEB887', // soft-brown
+              '#654321', // dark-brown
+              '#F5F5DC'  // cream
+            ],
+            borderColor: '#654321',
+            borderWidth: 2
+          }]
+        };
+
+        // Create pie chart
+        const ctx = document.getElementById('itemsChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'pie',
+          data: itemsData,
+          options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+              legend: {
+                display: false // We'll create custom legend
+              }
+            }
+          }
+        });
+
+        // Create custom legend
+        const legendContainer = document.getElementById('itemsLegend');
+        itemsData.labels.forEach((label, index) => {
+          const legendItem = document.createElement('div');
+          legendItem.className = 'legend-item';
+          
+          const colorBox = document.createElement('div');
+          colorBox.className = 'legend-color';
+          colorBox.style.backgroundColor = itemsData.datasets[0].backgroundColor[index];
+          
+          const labelText = document.createElement('span');
+          labelText.className = 'legend-label';
+          labelText.textContent = label;
+          
+          legendItem.appendChild(colorBox);
+          legendItem.appendChild(labelText);
+          legendContainer.appendChild(legendItem);
+        });
+      });
+    </script>
+    <script src="js/chart.js"></script>
+  </body>
+</html>

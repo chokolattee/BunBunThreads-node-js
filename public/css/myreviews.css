@@ -1,0 +1,420 @@
+/* Crochet Shop Color Palette */
+:root {
+  --primary-brown: #8B4513;
+  --light-brown: #D2B48C;
+  --dark-brown: #654321;
+  --cream: #F5F5DC;
+  --warm-white: #FFF8E7;
+  --soft-brown: #DEB887;
+  --accent-brown: #A0522D;
+}
+
+/* Enhanced existing styles with crochet theme */
+
+/* Body and background styling */
+body {
+  background: linear-gradient(135deg, var(--warm-white) 0%, var(--cream) 100%);
+  min-height: 100vh;
+  font-family: 'Georgia', serif;
+}
+
+/* Page header styling */
+.container h2 {
+  color: var(--dark-brown);
+  font-weight: 700;
+  text-shadow: 1px 1px 2px rgba(139, 69, 19, 0.1);
+  font-family: 'Georgia', serif;
+}
+
+.container h2 i {
+  color: var(--accent-brown);
+}
+
+/* Back button styling */
+.btn-outline-primary {
+  color: var(--primary-brown);
+  border-color: var(--primary-brown);
+  border-radius: 25px;
+  padding: 8px 20px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-brown);
+  border-color: var(--primary-brown);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+}
+
+/* Reviews grid layout - 2 cards per row */
+#reviewsList {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+  margin-top: 30px;
+}
+
+@media (max-width: 992px) {
+  #reviewsList {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Individual review card styling */
+.review-card {
+  background: linear-gradient(145deg, var(--warm-white), #ffffff);
+  border: none;
+  border-radius: 20px;
+  box-shadow: 
+    0 8px 25px rgba(139, 69, 19, 0.1),
+    0 4px 10px rgba(139, 69, 19, 0.05);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 25px;
+  position: relative;
+  overflow: hidden;
+}
+
+.review-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, var(--primary-brown), var(--accent-brown), var(--soft-brown));
+  border-radius: 20px 20px 0 0;
+}
+
+.review-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 
+    0 15px 35px rgba(139, 69, 19, 0.15),
+    0 8px 20px rgba(139, 69, 19, 0.1);
+}
+
+/* Review content styling */
+.item-name {
+  font-weight: 700;
+  color: var(--dark-brown);
+  font-size: 1.2em;
+  margin-bottom: 12px;
+  font-family: 'Georgia', serif;
+}
+
+/* Star rating styling */
+.rating-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.stars {
+  color: #FFD700;
+  font-size: 1.3em;
+  text-shadow: 1px 1px 2px rgba(255, 215, 0, 0.3);
+  filter: drop-shadow(0 2px 4px rgba(255, 215, 0, 0.2));
+}
+
+/* Review text styling */
+.review-text {
+  margin-top: 15px;
+  padding: 20px;
+  background: var(--cream);
+  border-radius: 15px;
+  border: 2px solid var(--soft-brown);
+  color: var(--dark-brown);
+  font-style: italic;
+  line-height: 1.6;
+  position: relative;
+}
+
+.review-text::before {
+  content: '"';
+  font-size: 3em;
+  color: var(--light-brown);
+  position: absolute;
+  top: -5px;
+  left: 10px;
+  opacity: 0.5;
+}
+
+/* Review metadata styling */
+.review-meta {
+  font-size: 0.85em;
+  color: var(--accent-brown);
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px dotted var(--light-brown);
+}
+
+/* Review images container */
+.review-images {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+  padding: 15px;
+  background: rgba(245, 245, 220, 0.3);
+  border-radius: 15px;
+  border: 1px dashed var(--light-brown);
+}
+
+/* Individual review image styling */
+.review-image {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 15px;
+  border: 3px solid var(--soft-brown);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.2);
+}
+
+.review-image:hover {
+  transform: scale(1.1) rotate(2deg);
+  border-color: var(--accent-brown);
+  box-shadow: 0 8px 20px rgba(139, 69, 19, 0.3);
+}
+
+/* No reviews state */
+.no-reviews {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--accent-brown);
+  background: var(--warm-white);
+  border-radius: 25px;
+  border: 2px dashed var(--light-brown);
+  margin: 2rem auto;
+  max-width: 600px;
+}
+
+.no-reviews i {
+  font-size: 4rem;
+  color: var(--soft-brown);
+  margin-bottom: 1rem;
+  opacity: 0.7;
+}
+
+/* Image modal styling */
+.image-modal {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Modal styling */
+.modal-content {
+  border-radius: 20px;
+  border: none;
+  box-shadow: 0 15px 35px rgba(139, 69, 19, 0.2);
+}
+
+.modal-header {
+  background: linear-gradient(135deg, var(--soft-brown), var(--light-brown));
+  color: var(--dark-brown);
+  border-radius: 20px 20px 0 0;
+  border-bottom: none;
+}
+
+.modal-title {
+  font-family: 'Georgia', serif;
+  font-weight: 600;
+}
+
+.modal-body {
+  background: var(--warm-white);
+}
+
+/* Edit Review Modal Styles */
+#editReviewModal .modal-content {
+  background: var(--warm-white);
+}
+
+#editReviewModal .rating-stars {
+  font-size: 28px;
+  margin: 15px 0;
+  padding: 15px;
+  background: var(--cream);
+  border-radius: 15px;
+  text-align: center;
+}
+
+#editReviewModal .rating-stars i {
+  cursor: pointer;
+  margin-right: 8px;
+  color: var(--light-brown);
+  transition: all 0.3s ease;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+#editReviewModal .rating-stars i:hover {
+  transform: scale(1.2);
+  color: #FFD700;
+}
+
+#editReviewModal .rating-stars i.fas {
+  color: #FFD700;
+  text-shadow: 1px 1px 2px rgba(255, 215, 0, 0.3);
+}
+
+#editRatingDescription {
+  font-size: 1rem;
+  color: var(--accent-brown);
+  font-weight: 500;
+  margin-top: 10px;
+}
+
+/* Form styling */
+.form-label {
+  color: var(--dark-brown);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.form-control {
+  border: 2px solid var(--light-brown);
+  border-radius: 12px;
+  padding: 12px 16px;
+  background: var(--cream);
+  color: var(--dark-brown);
+  transition: all 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: var(--primary-brown);
+  box-shadow: 0 0 0 3px rgba(139, 69, 19, 0.1);
+  background: var(--warm-white);
+}
+
+/* Button styling */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-brown), var(--accent-brown));
+  border: none;
+  border-radius: 25px;
+  padding: 12px 25px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--dark-brown), var(--primary-brown));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(139, 69, 19, 0.3);
+}
+
+.btn-secondary {
+  background: var(--soft-brown);
+  border: none;
+  border-radius: 25px;
+  padding: 12px 25px;
+  color: var(--dark-brown);
+  font-weight: 500;
+}
+
+.btn-secondary:hover {
+  background: var(--light-brown);
+  color: var(--dark-brown);
+}
+
+/* Modal footer styling */
+.modal-footer {
+  background: var(--cream);
+  border-top: 1px solid var(--soft-brown);
+  border-radius: 0 0 20px 20px;
+}
+
+/* Form validation */
+.is-invalid {
+  border-color: #dc3545;
+  background: #fff5f5;
+}
+
+.invalid-feedback {
+  display: none;
+  color: #dc3545;
+  font-size: 0.875em;
+  font-weight: 500;
+}
+
+.is-invalid ~ .invalid-feedback {
+  display: block;
+}
+
+/* Action buttons in cards (if any) */
+.card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px dotted var(--light-brown);
+}
+
+.btn-edit, .btn-delete {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 0.85em;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-edit {
+  background: var(--soft-brown);
+  color: var(--dark-brown);
+  border: none;
+}
+
+.btn-edit:hover {
+  background: var(--accent-brown);
+  color: var(--warm-white);
+  transform: translateY(-2px);
+}
+
+/* Responsive design */
+@media (max-width: 992px) {
+  #reviewsList {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .review-card {
+    padding: 20px;
+    margin: 0 10px;
+  }
+  
+  .review-images {
+    justify-content: center;
+  }
+  
+  .review-image {
+    width: 70px;
+    height: 70px;
+  }
+}
+
+@media (max-width: 576px) {
+  .container {
+    padding: 0 15px;
+  }
+  
+  .review-card {
+    margin: 0 5px;
+    padding: 15px;
+  }
+  
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .btn-outline-primary {
+    align-self: center;
+    width: fit-content;
+  }
+}

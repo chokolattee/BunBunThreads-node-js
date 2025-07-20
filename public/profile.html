@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Complete Profile</title>
+<!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <!-- Bootstrap CSS & JS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- SweetAlert2 for prompts -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Your custom CSS -->
+  <link rel="stylesheet" href="/css/profile.css" />
+  <script src="/js/profile.js"></script>
+</head>
+<body>
+
+   <div class="floating-shapes">
+    <div class="shape"></div>
+    <div class="shape"></div>
+    <div class="shape"></div>
+  </div>
+
+  <!-- Header placeholder -->
+  <div id="header">Loading header...</div>
+
+  <!-- Page Content -->
+  <div class="container form mt-5 pt-5">
+    <div class="profile-card">
+      <div class="profile-header">
+        <h2><i class="fas fa-user-circle"></i> Complete Your Profile</h2>
+        <p>Let's make your profile shine ✨</p>
+      </div>
+
+      <div class="text-center">
+        <div class="profile-image-container">
+          <img id="profileImagePreview" src="https://via.placeholder.com/120" alt="Profile Picture" />
+          <div class="image-upload-overlay">
+            <i class="fas fa-camera"></i>
+          </div>
+        </div>
+      </div>
+
+      <form id="profileForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label class="form-label">
+            <i class="fas fa-crown"></i> Title
+          </label>
+          <select name="title" id="title" class="form-select">
+            <option value="">Select Title</option>
+            <option value="Mr.">Mr.</option>
+            <option value="Ms.">Ms.</option>
+            <option value="Mrs.">Mrs.</option>
+          </select>
+        </div>
+
+        <input type="hidden" name="userId" id="userId" />
+
+        <div class="form-group">
+          <label class="form-label">
+            <i class="fas fa-user"></i> Name
+          </label>
+          <div class="form-row">
+            <input type="text" name="fname" id="fname" placeholder="First Name" class="form-control" required />
+            <input type="text" name="lname" id="lname" placeholder="Last Name" class="form-control" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <i class="fas fa-map-marker-alt"></i> Address
+          </label>
+          <div class="form-row">
+            <input type="text" name="addressline" id="addressline" placeholder="Street Address" class="form-control" />
+            <input type="text" name="town" id="town" placeholder="Town/City" class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <i class="fas fa-phone"></i> Phone Number
+          </label>
+          <input type="text" name="phone" id="phone" placeholder="Your phone number" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            <i class="fas fa-image"></i> Profile Picture
+          </label>
+          <div class="file-input-wrapper">
+            <input type="file" name="image" id="image" accept="image/*" />
+            <label for="image" class="file-input-label">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <br>
+              Choose a beautiful photo
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save"></i> Save Profile
+        </button>
+        
+        <button type="button" id="deactivateBtn" class="btn btn-danger">
+          <i class="fas fa-user-times"></i> Deactivate Account
+        </button>
+      </form>
+      
+      <p id="profileMsg" class="mt-3"></p>
+    </div>
+  </div>
+</body>
+<script>
+    // Image preview functionality
+    document.getElementById('image').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('profileImagePreview').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Click on image to trigger file input
+    document.getElementById('profileImagePreview').addEventListener('click', function() {
+      document.getElementById('image').click();
+    });
+
+    document.querySelector('.image-upload-overlay').addEventListener('click', function() {
+      document.getElementById('image').click();
+    });
+
+    // Update file input label when file is selected
+    document.getElementById('image').addEventListener('change', function(e) {
+      const label = document.querySelector('.file-input-label');
+      if (e.target.files.length > 0) {
+        label.innerHTML = `<i class="fas fa-check-circle"></i><br>${e.target.files[0].name}`;
+        label.style.background = 'var(--light-brown)';
+        label.style.color = 'white';
+      }
+    });
+  </script>
+</html>
