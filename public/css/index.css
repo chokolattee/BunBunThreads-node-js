@@ -192,11 +192,10 @@ html {
   box-shadow: 0 8px 25px rgba(139, 69, 19, 0.3);
   position: relative;
   overflow: hidden;
-  min-height: 250; /* Taller buttons */
-  width: 100%; /* Full width of grid cell */
+  min-height: 250; 
+  width: 100%; 
 }
 
-/* Keep all your existing hover effects */
 .category-btn::before {
   content: '';
   position: absolute;
@@ -218,21 +217,21 @@ html {
 }
 
 .category-btn i {
-  font-size: 3rem; /* Larger icon */
+  font-size: 3rem; 
   margin-bottom: 0.5rem;
 }
 
-/* Optional: Add responsive behavior */
+
 @media (max-width: 1024px) {
   .shop-categories {
-    grid-template-columns: repeat(2, 1fr); /* 2 columns on tablets */
+    grid-template-columns: repeat(2, 1fr); 
     max-width: 800px;
   }
 }
 
 @media (max-width: 768px) {
   .shop-categories {
-    grid-template-columns: 1fr; /* 1 column on mobile */
+    grid-template-columns: 1fr; 
     max-width: 500px;
     gap: 1.5rem;
   }
@@ -367,7 +366,7 @@ html {
       background: linear-gradient(90deg, var(--accent-brown), var(--dark-brown));
     }
 .category-btn {
-  text-decoration: none; /* Removes underline */
+  text-decoration: none; 
 }
 
 .product-buttons {

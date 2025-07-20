@@ -344,7 +344,7 @@ function updateIndicators(section) {
     const grid = document.getElementById(`${section}-grid`);
     const indicators = document.getElementById(`${section}-indicators`);
 
-    if (!grid || !indicators) return; // 🛑 Safeguard
+    if (!grid || !indicators) return;
 
     const cards = grid.querySelectorAll('.product-card');
 
@@ -353,10 +353,9 @@ function updateIndicators(section) {
     const visibleCards = Math.floor(grid.clientWidth / (cards[0].offsetWidth + 32));
     const totalSlides = Math.max(1, cards.length - visibleCards + 1);
 
-    // Clear existing indicators
     indicators.innerHTML = '';
 
-    // Create new indicators
+   
     for (let i = 0; i < totalSlides; i++) {
         const indicator = document.createElement('div');
         indicator.className = 'indicator';
