@@ -184,7 +184,8 @@ $(document).ready(function () {
                 <tr ${review.deleted_at ? 'class="deleted-row"' : ''}>
                     <td>${review.review_id}</td>
                     <td>${review.orderinfo_id}</td>
-                    <td>${review.customer_first_name} ${review.customer_last_name}</td>
+                   <td>${review.customer_name}</td>
+            
                     <td>${review.item_name}</td>
                     <td>${generateStarRating(review.rating)}</td>
                     <td>${review.review_text}</td>
@@ -305,12 +306,12 @@ $(document).ready(function () {
         }
     }
 
-    // Infinite scroll handler
+    
     $(window).scroll(function () {
         if (currentViewMode !== 'infinite' || isLoading || !hasMoreData) return;
 
         if ($(window).scrollTop() + $(window).height() > $(document).height() - 100) {
-            // Simulate loading more data (in a real app, you'd make an API call)
+           
             $('#loading-spinner').show();
             setTimeout(() => {
                 $('#loading-spinner').hide();
@@ -318,7 +319,7 @@ $(document).ready(function () {
         }
     });
 
-    // Export to Excel
+    
     $('#exportExcel').click(function () {
         const data = filteredReviews.map(review => ({
             'Review ID': review.review_id,
@@ -445,5 +446,5 @@ $(document).ready(function () {
         });
     });
 
-    fetchReviews();
+    fetchReviews();f
 });

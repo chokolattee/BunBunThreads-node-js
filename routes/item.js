@@ -17,4 +17,10 @@ router.delete('/admin/:id', isAuthenticatedUser, authorizeRoles('Admin'), itemCo
 router.patch('/admin/restore/:id', isAuthenticatedUser, authorizeRoles('Admin'), itemController.restoreItem);
 router.get('/admin/all', isAuthenticatedUser, authorizeRoles('Admin'), itemController.getAllItemsIncludingDeleted);
 
+
+router.get('/:id', itemController.getItemDetails);
+
+module.exports = router;
+
+
 module.exports = router;

@@ -2,41 +2,31 @@ $(document).ready(function () {
     const API_BASE_URL = 'http://localhost:3000/';
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
+    const userRole = localStorage.getItem('userRole'); // NEW: Get user role
 
-    // Check authentication first
     if (!token || !userId) {
-        Swal.fire({
-            title: 'Login Required',
-            text: 'You must be logged in to view this page',
-            icon: 'warning',
-            confirmButtonText: 'Go to Login'
-        }).then(() => {
-            window.location.href = '/login.html';
-        });
+        alert("You must be logged in first!");
+        window.location.href = '/login.html';
         return;
     }
 
-    // Initialize header
-    function initHeader() {
-        $('#header').load('header.html', function (response, status, xhr) {
-            if (status === "error") {
+    // NEW: Only load header if not admin
+    if (userRole !== 'Admin') {
+        $('#header').load('/header.html', function (response, status, xhr) {
+            if (status == "error") {
                 console.error("Failed to load header:", xhr.status, xhr.statusText);
-                return;
-            }
+            } else {
+                // Enable dropdown
+                document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function (el) {
+                    new bootstrap.Dropdown(el);
+                });
 
-            // Initialize dropdowns
-            const dropdowns = [].slice.call(document.querySelectorAll('[data-bs-toggle="dropdown"]'));
-            dropdowns.forEach(el => new bootstrap.Dropdown(el));
+                // Adjust header links
+                $('#login-link, #register-link').addClass('d-none');
+                $('#user-dropdown').removeClass('d-none');
 
-            // Update UI for logged-in user
-            $('#login-link, #register-link').addClass('d-none');
-            $('#user-dropdown').removeClass('d-none');
-
-            // Load user profile data for header
-            $.ajax({
-                url: `${API_BASE_URL}api/users/customers/${userId}`,
-                headers: { 'Authorization': `Bearer ${token}` },
-                success: function(res) {
+                // Set user data in header
+                $.get(`/api/users/customers/${userId}`, function (res) {
                     if (res.success && res.data) {
                         const data = res.data;
                         const fullName = `${data.fname || ''} ${data.lname || ''}`.trim();
@@ -45,168 +35,128 @@ $(document).ready(function () {
                             $('.profile-img').attr('src', `/${data.image_path}`);
                         }
                     }
-                },
-                error: function(err) {
-                    console.error('Error loading user data:', err);
-                }
-            });
+                });
+            }
         });
+    } else {
+        $('#header').remove(); // NEW: Remove header for admins
     }
 
-    // Load profile data
-    function fetchProfileData() {
+    $('#userId').val(userId);
+
+    fetchProfileData(userId);
+
+    function fetchProfileData(userId) {
         $.ajax({
-            url: `${API_BASE_URL}api/users/customers/${userId}`,
-            headers: { 'Authorization': `Bearer ${token}` },
-            success: function(res) {
+            url: `/api/users/customers/${userId}`,
+            method: 'GET',
+            success: function (res) {
                 if (res.success && res.data) {
                     const data = res.data;
-                    $('#userId').val(userId);
                     $('#title').val(data.title || '');
                     $('#fname').val(data.fname || '');
                     $('#lname').val(data.lname || '');
                     $('#addressline').val(data.addressline || '');
                     $('#town').val(data.town || '');
                     $('#phone').val(data.phone || '');
-                    
                     if (data.image_path) {
                         $('#profileImagePreview').attr('src', `/${data.image_path}`);
                     }
                 }
             },
-            error: function(err) {
-                console.error('Error fetching profile:', err);
-                $('#profileMsg').text('Failed to load profile data').css('color', 'red');
+            error: function () {
+                console.warn('No profile found.');
             }
         });
     }
 
-    // Handle image preview
-    $('#image').on('change', function() {
+    $('#image').on('change', function () {
         const file = this.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                $('#profileImagePreview').attr('src', e.target.result);
-            };
-            reader.readAsDataURL(file);
+            $('#profileImagePreview').attr('src', URL.createObjectURL(file));
         }
     });
 
-    // Handle form submission
-    $('#profileForm').on('submit', function(e) {
+    $('#profileForm').on('submit', function (e) {
         e.preventDefault();
-        
         const formData = new FormData(this);
-        formData.append('userId', userId);
+        formData.set('userId', userId);
 
         $.ajax({
-            url: `${API_BASE_URL}api/users/update-profile`,
+            url: '/api/users/update-profile',
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
             data: formData,
             contentType: false,
             processData: false,
-            success: function(res) {
-                if (res.success) {
-                    Swal.fire({
-                        title: 'Success!',
-                        text: 'Profile updated successfully',
-                        icon: 'success'
-                    });
-                    fetchProfileData();
-                    // Update header image if changed
-                    if ($('#image')[0].files[0]) {
-                        $('.profile-img').attr('src', $('#profileImagePreview').attr('src'));
-                    }
-                } else {
-                    $('#profileMsg').text(res.message || 'Update failed').css('color', 'red');
-                }
+            success: function () {
+                $('#profileMsg').text(' Profile saved!').css('color', 'green');
+                fetchProfileData(userId);
             },
-            error: function(err) {
-                console.error('Update error:', err);
-                $('#profileMsg').text('Error updating profile').css('color', 'red');
+            error: function (err) {
+                $('#profileMsg').text(' Failed to save.').css('color', 'red');
+                console.error(err);
             }
         });
     });
 
-  // Deactivation button handler
-$('#deactivateBtn').on('click', function() {
-    Swal.fire({
-        title: 'Deactivate Account',
-        html: `
-            <p>This will permanently deactivate your account. To confirm, please enter your password:</p>
-            <input type="password" id="deactivatePassword" class="swal2-input" placeholder="Your Password">
-        `,
-        showCancelButton: true,
-        confirmButtonText: 'Deactivate',
-        cancelButtonText: 'Cancel',
-        focusConfirm: false,
-        preConfirm: () => {
-            const password = Swal.getPopup().querySelector('#deactivatePassword').value;
-            if (!password) {
-                Swal.showValidationMessage('Password is required');
-                return false;
-            }
-            return { password: password };
-        }
-    }).then((result) => {
-        if (result.isConfirmed) {
-            const userId = $('#userId').val();
-            const password = result.value.password;
-            
-            // Show loading
-            Swal.fire({
-                title: 'Deactivating Account...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
+    function deactivateAccount(password) {
+        Swal.fire({
+            title: 'Processing...',
+            html: 'Please wait while we deactivate your account',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
 
-            // Call deactivation endpoint
-            $.ajax({
-                method: "POST",
-                url: "/api/users/deactivate", // Make sure this matches your backend route
-                data: JSON.stringify({
-                    userId: userId,
-                    password: password
-                }),
-                contentType: 'application/json',
-                dataType: "json",
-                success: function(response) {
-                    if (response.success) {
+                const userIdInt = parseInt(userId, 10);
+                if (isNaN(userIdInt)) {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Invalid user session. Please log in again.',
+                        icon: 'error'
+                    });
+                    return;
+                }
+
+                $.ajax({
+                    url: `${API_BASE_URL}api/users/deactivate`,
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    data: JSON.stringify({
+                        userId: userIdInt,
+                        password: password
+                    }),
+                    success: function (res) {
+                        if (res.success) {
+                            Swal.fire({
+                                title: 'Account Deactivated',
+                                text: 'Your account has been deactivated successfully',
+                                icon: 'success'
+                            }).then(() => {
+                                localStorage.clear();
+                                window.location.href = 'login.html';
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: res.message || res.error || 'Failed to deactivate account',
+                                icon: 'error'
+                            });
+                        }
+                    },
+                    error: function (err) {
+                        console.error('Deactivation error:', err);
+                        const errorMsg = err.responseJSON?.message || err.responseJSON?.error || 'Server error during deactivation';
                         Swal.fire({
-                            icon: 'success',
-                            title: 'Account Deactivated',
-                            text: 'Your account has been deactivated successfully. You will be logged out shortly.',
-                            timer: 3000,
-                            showConfirmButton: false
-                        }).then(() => {
-                            // Redirect to login or home page
-                            window.location.href = '/users/login';
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Deactivation Failed',
-                            text: response.error || 'Failed to deactivate account'
+                            title: 'Error',
+                            text: errorMsg,
+                            icon: 'error'
                         });
                     }
-                },
-                error: function(xhr) {
-                    const error = xhr.responseJSON?.error || 'Server error during deactivation';
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Deactivation Failed',
-                        text: error
-                    });
-                }
-            });
-        }
-    });
-});
-    // Initialize everything
-    initHeader();
-    fetchProfileData();
+                });
+            }
+        });
+    }
 });

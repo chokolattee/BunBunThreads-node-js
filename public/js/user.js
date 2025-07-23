@@ -110,6 +110,11 @@ $(document).ready(function () {
         $('#loadingSpinner').show();
         $('#ubody').html('');
 
+        console.log('Sending request with:', { 
+        page: currentPage,
+        search: searchQuery
+    });
+
         $.ajax({
             url: `${url}api/users/users`,
             method: 'GET',
@@ -284,6 +289,7 @@ $(document).ready(function () {
     // Search functionality
     $('#searchButton').click(function () {
         searchQuery = $('#userSearch').val();
+        console.log('Search query:', searchQuery);
         currentPage = 1;
         loadUsers();
     });

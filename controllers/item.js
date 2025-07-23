@@ -1,14 +1,18 @@
 const db = require('../config/database');
 
 const getAllItems = (req, res) => {
-    const sql = `
-        SELECT i.*, s.*, c.description AS category 
-        FROM item i
-        INNER JOIN stock s ON i.item_id = s.item_id
-        INNER JOIN category c ON i.category_id = c.category_id
-        WHERE i.deleted_at IS NULL
-        GROUP BY i.item_id
-    `;
+   const sql = `
+  SELECT 
+    i.*, 
+    COALESCE(SUM(s.quantity), 0) AS quantity,
+    c.description AS category 
+  FROM item i
+  LEFT JOIN stock s ON i.item_id = s.item_id
+  LEFT JOIN category c ON i.category_id = c.category_id AND c.deleted_at IS NULL
+  WHERE i.deleted_at IS NULL
+  GROUP BY i.item_id
+`;
+
 
     const imagesSql = `
         SELECT item_id, image_path 
@@ -57,11 +61,11 @@ const getAllItems = (req, res) => {
 };
 
 // // Get items by category (public) 
-// const getItemsByCategory = (req, res) => {
-//     const categoryId = req.params.categoryId;
+const getItemsByCategory = (req, res) => {
+    const categoryId = req.params.categoryId;
 
-//     const sql = `
-//         SELECT 
+    const sql = `
+        SELECT 
 //             i.item_id, 
 //             i.item_name, 
 //             i.sell_price
@@ -74,47 +78,47 @@ const getAllItems = (req, res) => {
 //         GROUP BY i.item_id
 //     `;
 
-//     const imagesSql = `
+    const imagesSql = `
 //         SELECT item_id, image_path 
 //         FROM item_images 
 //         WHERE deleted_at IS NULL
 //     `;
 
-//     db.query(sql, [categoryId], (err, results) => {
-//         if (err) {
-//             console.error('❌ SQL Error:', err.message);
-//             return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
-//         }
+    db.query(sql, [categoryId], (err, results) => {
+        if (err) {
+            console.error('❌ SQL Error:', err.message);
+            return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+        }
 
-//         // Get all images
-//         db.query(imagesSql, (err, images) => {
-//             if (err) {
-//                 console.error('❌ Images SQL Error:', err.message);
-//                 return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
-//             }
+        // Get all images
+        db.query(imagesSql, (err, images) => {
+            if (err) {
+                console.error('❌ Images SQL Error:', err.message);
+                return res.status(500).json({ status: 'error', message: 'Internal Server Error' });
+            }
 
-//             // Group images by item_id
-//             const imagesByItem = images.reduce((acc, image) => {
-//                 if (!acc[image.item_id]) {
-//                     acc[image.item_id] = [];
-//                 }
-//                 acc[image.item_id].push(image.image_path);
-//                 return acc;
-//             }, {});
+            // Group images by item_id
+            const imagesByItem = images.reduce((acc, image) => {
+                if (!acc[image.item_id]) {
+                    acc[image.item_id] = [];
+                }
+                acc[image.item_id].push(image.image_path);
+                return acc;
+            }, {});
 
-//             const formatted = results.map(row => {
-//                 return {
-//                     item_id: row.item_id,
-//                     item_name: row.item_name,
-//                     sell_price: row.sell_price,
-//                     images: imagesByItem[row.item_id] || []
-//                 };
-//             });
+            const formatted = results.map(row => {
+                return {
+                    item_id: row.item_id,
+                    item_name: row.item_name,
+                    sell_price: row.sell_price,
+                    images: imagesByItem[row.item_id] || []
+                };
+            });
 
-//             res.json({ status: 'success', data: formatted });
-//         });
-//     });
-// };
+            res.json({ status: 'success', data: formatted });
+        });
+    });
+};
 
 // --------------------
 // ADMIN FUNCTIONS
@@ -219,7 +223,7 @@ const getSingleItem = (req, res) => {
 const createItem = (req, res) => {
     const { item_name, description, cost_price, sell_price, quantity, category_id } = req.body;
     const imageFiles = req.files || [];
-    
+
     if (!item_name || !description || !cost_price || !sell_price || !quantity || !category_id) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
@@ -243,7 +247,7 @@ const createItem = (req, res) => {
             if (imageFiles.length > 0) {
                 const imgSql = `INSERT INTO item_images (item_id, image_path) VALUES ?`;
                 const imgValues = imageFiles.map(file => [itemId, file.filename]);
-                db.query(imgSql, [imgValues], (err3) => {      
+                db.query(imgSql, [imgValues], (err3) => {
                     if (err3) return res.status(500).json({ error: 'Error saving image path', details: err3 });
                     return res.status(201).json({ success: true, message: 'Item created with images', itemId });
                 });
@@ -355,7 +359,7 @@ const getAllItemsIncludingDeleted = (req, res) => {
                 const itemImages = imagesByItem[row.item_id] || [];
                 return {
                     ...row,
-                    image: itemImages[0] || null, 
+                    image: itemImages[0] || null,
                     all_images: itemImages
                 };
             });
@@ -422,6 +426,70 @@ const searchItems = (req, res) => {
     });
 };
 
+
+
+
+const getItemDetails = (req, res) => {
+    const itemId = req.params.id;
+
+    const itemQuery = `
+        SELECT 
+            i.item_id, 
+            i.item_name, 
+            i.description, 
+            i.cost_price, 
+            i.sell_price, 
+            i.category_id,
+            i.image1, 
+            i.image2, 
+            i.image3,
+            s.quantity,  /* Add this line to get stock quantity */
+            GROUP_CONCAT(ii.image_path) AS images
+        FROM item i
+        LEFT JOIN item_images ii ON i.item_id = ii.item_id
+        LEFT JOIN stock s ON i.item_id = s.item_id  /* Add this join */
+        WHERE i.item_id = ?
+        GROUP BY i.item_id
+    `;
+
+    const reviewQuery = `
+        SELECT 
+            r.rating, 
+            r.review_text, 
+            c.name AS full_name
+        FROM reviews r
+        JOIN users c ON r.customer_id = c.id
+        WHERE r.item_id = ? AND r.deleted_at IS NULL
+    `;
+
+    // First query: get item details + images + stock
+    db.query(itemQuery, [itemId], (err, itemResults) => {
+        if (err) {
+            console.error("🟥 itemQuery error:", err);
+            return res.status(500).json({ error: 'Database error', details: err });
+        }
+
+        if (itemResults.length === 0) {
+            console.warn("⚠️ Item not found for ID:", itemId);
+            return res.status(404).json({ error: 'Item not found' });
+        }
+
+        const item = itemResults[0];
+        item.images = (item.images || '').split(',').filter(Boolean); // clean up images array
+
+        // Second query: get customer reviews
+        db.query(reviewQuery, [itemId], (err, reviewResults) => {
+            if (err) {
+                console.error("🟥 reviewQuery error:", err);
+                return res.status(500).json({ error: 'Review fetch error', details: err });
+            }
+
+            item.reviews = reviewResults || [];
+            res.json(item);
+        });
+    });
+};
+
 // --------------------
 // EXPORTS
 // --------------------
@@ -432,8 +500,9 @@ module.exports = {
     getSingleItem,
     createItem,
     updateItem,
-    deleteItem: softDeleteItem, 
+    deleteItem: softDeleteItem,
     restoreItem,
     getAllItemsIncludingDeleted,
-    searchItems              
+    searchItems,
+    getItemDetails,
 };

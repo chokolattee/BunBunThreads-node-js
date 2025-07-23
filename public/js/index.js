@@ -1,4 +1,4 @@
-// public/js/script.js
+
 $(document).ready(function () {
     const token = localStorage.getItem("bunbun_token");
 
@@ -16,7 +16,6 @@ $(document).ready(function () {
     `);
     }
 
-    // Enhanced product card creation function
     function createProductCard(product) {
         return `
       <div class="product-card" data-product-id="${product.id}">

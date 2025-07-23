@@ -15,28 +15,86 @@
 <body>
 <div id="header"></div>
 <div class="container mt-4">
-  <h2 class="mb-4">Checkout</h2>
+  <h2 class="mb-4" style="font-size: 70px;"> Checkout</h2>
 
-  <!-- 🛍️ Product Cards -->
-  <div id="cartSummary"></div>
-
-  <!-- 🚚 Shipping & Totals -->
-  <form id="checkoutForm" class="mt-4">
-    <div class="mb-3">
-      <label for="shippingRegion" class="form-label">Select Shipping Region</label>
-      <select id="shippingRegion" class="form-select" required>
-        <option value="">-- Choose Region --</option>
-      </select>
+  <!-- Main Checkout Card Container -->
+  <div class="checkout-main-card">
+    <!-- 🛍️ Product Cards Section -->
+    <div class="checkout-section">
+      <h4 class="section-title" style="font-size: 40px; text-align: center;">🛍️ Your Items</h4>
+      <div id="cartSummary"></div>
     </div>
 
-    <div class="mb-3">
-      <div><strong>Shipping Rate:</strong> ₱<span id="shippingRate">0.00</span></div>
-      <div><strong>Items Total:</strong> ₱<span id="itemsTotal">0.00</span></div>
-      <div><strong>Grand Total:</strong> ₱<span id="grandTotal">0.00</span></div>
-    </div>
+    <!-- 🚚 Shipping & Payment Section -->
+    <div class="checkout-section">
+      <h4 class="section-title">🚚 Shipping & Payment</h4>
+      
+      <form id="checkoutForm" class="checkout-form">
+        <div class="form-group">
+          <label for="shippingRegion" class="form-label">Select Shipping Region</label>
+          <select id="shippingRegion" class="form-select" required>
+            <option value="">-- Choose Region --</option>
+          </select>
+        </div>
 
-    <button type="submit" class="btn btn-primary w-100">Confirm Order</button>
-  </form>
+        <div class="totals-section">
+          <div class="total-row">
+            <span class="total-label">📦 Shipping Rate:</span>
+            <span class="total-value">₱<span id="shippingRate">0.00</span></span>
+          </div>
+          <div class="total-row">
+            <span class="total-label">🛒 Items Total:</span>
+            <span class="total-value">₱<span id="itemsTotal">0.00</span></span>
+          </div>
+          <div class="total-row grand-total-row">
+            <span class="total-label">💰 Grand Total:</span>
+            <span class="total-value">₱<span id="grandTotal">0.00</span></span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 checkout-btn">
+          <span class="btn-text"> Confirm Order</span>
+          <span class="btn-icon">→</span>
+        </button>
+      </form>
+    </div>
+  </div>
 </div>
+
+<script>
+// Add floating particles effect
+function createParticle() {
+  const particle = document.createElement('div');
+  particle.classList.add('particle');
+  particle.style.left = Math.random() * 100 + 'vw';
+  particle.style.animationDelay = Math.random() * 6 + 's';
+  particle.style.animationDuration = (Math.random() * 3 + 4) + 's';
+  document.body.appendChild(particle);
+  
+  setTimeout(() => {
+    particle.remove();
+  }, 8000);
+}
+
+// Create particles periodically
+setInterval(createParticle, 2000);
+
+// Add subtle hover effects to form elements
+document.addEventListener('DOMContentLoaded', function() {
+  const formElements = document.querySelectorAll('.form-select, .btn');
+  
+  formElements.forEach(element => {
+    element.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-2px)';
+    });
+    
+    element.addEventListener('mouseleave', function() {
+      if (!this.matches(':focus')) {
+        this.style.transform = 'translateY(0)';
+      }
+    });
+  });
+});
+</script>
 </body>
 </html>

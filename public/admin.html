@@ -6,11 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BUNBUN THREADS - Admin Dashboard</title>
 
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 
-    <!-- Your custom admin CSS -->
     <link rel="stylesheet" href="css/admin.css" />
+
+
+    <!-- Font Awesome (already used) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Bootstrap Bundle JS (includes Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </head>
 
 <body>
@@ -68,8 +74,8 @@
                 </a>
             </div>
         </nav>
-<br>
-<br>
+        <br>
+        <br>
         <div class="yarn-decoration">
             <div class="yarn-ball"></div>
             <div class="yarn-ball"></div>
@@ -85,95 +91,143 @@
                 <h1>BUNBUN THREADS</h1>
             </div>
             <div class="header-actions">
-                <button class="action-btn" onclick="location.href='index.html'" title="Go to Main Site">
-                    <i class="fas fa-home"></i>
-                </button>
-                <button class="action-btn" onclick="location.href='profile.html'" title="Admin Profile">
-                    <i class="fas fa-user-circle"></i>
-                </button>
+                
+
+                <div class="custom-dropdown">
+                    <button class="action-btn profile-toggle" title="Profile Options">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
+                    <div class="dropdown-menu" id="profileDropdown">
+                        <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+                        <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                    </div>
+                </div>
             </div>
+
+
         </div>
     </div>
 
     <!-- Main Content -->
-  <div class="main-content" id="mainContent">
-    <div class="content-container" id="homeContent">
-        <!-- Left Section - Image -->
-        <div class="left-section">
-            <div class="bun-img">
-                <img src="images/bunbun.png" alt="BunBun Logo">
+    <div class="main-content" id="mainContent">
+        <div class="content-container" id="homeContent">
+            <!-- Left Section - Image -->
+            <div class="left-section">
+                <div class="bun-img">
+                    <img src="images/bunbun.png" alt="BunBun Logo">
+                </div>
             </div>
-        </div>
 
-        <!-- Right Section - Welcome Card -->
-        <div class="right-section">
-            <div class="welcome-card">
-                <h2>Welcome to BUNBUN THREADS Admin Dashboard</h2>
-                <p>Manage your cozy crochet shop with love and care. Navigate through the sidebar to access
-                    different sections and keep your yarn business running smoothly! 🧶</p>
+            <!-- Right Section - Welcome Card -->
+            <div class="right-section">
+                <div class="welcome-card">
+                    <h2>Welcome to BUNBUN THREADS Admin Dashboard</h2>
+                    <p>Manage your cozy crochet shop with love and care. Navigate through the sidebar to access
+                        different sections and keep your yarn business running smoothly! 🧶</p>
+                </div>
             </div>
         </div>
+        <iframe id="contentFrame" src="" style="display: none;" width="100%" height="1000px" frameborder="0"></iframe>
     </div>
-  <iframe id="contentFrame" src="" style="display: none;" width="100%" height="1000px" frameborder="0"></iframe>
-</div>
 
     <!-- JS Scripts -->
     <script>
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('closed');
-        document.getElementById('topHeader').classList.toggle('sidebar-closed');
-        document.getElementById('mainContent').classList.toggle('sidebar-closed');
-    }
 
-    function setActive(link) {
-        document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-        if (link) link.classList.add('active');
-    }
 
-    function showHome(link) {
-        setActive(link);
-        document.getElementById('homeContent').style.display = 'flex';
-        document.getElementById('contentFrame').style.display = 'none';
-    }
 
-    function loadPage(link) {
-        const pageUrl = link.getAttribute('data-page');
-        setActive(link);
-        document.getElementById('contentFrame').src = pageUrl;
-        document.getElementById('homeContent').style.display = 'none';
-        document.getElementById('contentFrame').style.display = 'block';
-    }
+        document.getElementById('logoutBtn').addEventListener('click', function () {
+            // Remove session data
+            localStorage.removeItem('token');
+            localStorage.removeItem('userId');
 
-    document.addEventListener('DOMContentLoaded', function () {
-        // Sidebar animation
-        document.querySelectorAll('.nav-item').forEach((item, index) => {
-            item.style.opacity = '0';
-            item.style.transform = 'translateX(-20px)';
-            setTimeout(() => {
-                item.style.transition = 'all 0.5s ease';
-                item.style.opacity = '1';
-                item.style.transform = 'translateX(0)';
-            }, index * 150);
+            // Optional: clear cookies or other storage if needed
+
+            // Redirect to home.html after logout
+            window.location.href = 'index.html';
+
         });
 
-        // Link hover effect
-        document.querySelectorAll('.nav-link').forEach(link => {
-            link.addEventListener('mouseenter', function () {
-                if (!document.getElementById('sidebar').classList.contains('closed')) {
-                    this.style.transform = 'translateX(8px) scale(1.02)';
-                }
+
+
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('closed');
+            document.getElementById('topHeader').classList.toggle('sidebar-closed');
+            document.getElementById('mainContent').classList.toggle('sidebar-closed');
+        }
+
+        function setActive(link) {
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+            if (link) link.classList.add('active');
+        }
+
+        function showHome(link) {
+            setActive(link);
+            document.getElementById('homeContent').style.display = 'flex';
+            document.getElementById('contentFrame').style.display = 'none';
+        }
+
+        function loadPage(link) {
+            const pageUrl = link.getAttribute('data-page');
+            setActive(link);
+            document.getElementById('contentFrame').src = pageUrl;
+            document.getElementById('homeContent').style.display = 'none';
+            document.getElementById('contentFrame').style.display = 'block';
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Sidebar animation
+            document.querySelectorAll('.nav-item').forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(-20px)';
+                setTimeout(() => {
+                    item.style.transition = 'all 0.5s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateX(0)';
+                }, index * 150);
             });
-            link.addEventListener('mouseleave', function () {
-                if (!this.classList.contains('active') && !document.getElementById('sidebar').classList.contains('closed')) {
-                    this.style.transform = 'translateX(0) scale(1)';
-                }
+
+            // Link hover effect
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('mouseenter', function () {
+                    if (!document.getElementById('sidebar').classList.contains('closed')) {
+                        this.style.transform = 'translateX(8px) scale(1.02)';
+                    }
+                });
+                link.addEventListener('mouseleave', function () {
+                    if (!this.classList.contains('active') && !document.getElementById('sidebar').classList.contains('closed')) {
+                        this.style.transform = 'translateX(0) scale(1)';
+                    }
+                });
             });
+
+            // Show Home by default
+            showHome(document.querySelector('.nav-link[data-tooltip="Home"]'));
+        });
+    </script>
+    <script>
+        const profileToggle = document.querySelector('.profile-toggle');
+        const dropdownMenu = document.getElementById('profileDropdown');
+
+        profileToggle.addEventListener('click', () => {
+            dropdownMenu.parentElement.classList.toggle('show');
         });
 
-        // Show Home by default
-        showHome(document.querySelector('.nav-link[data-tooltip="Home"]'));
-    });
-</script>
+        // Optional: Close dropdown when clicking outside
+        document.addEventListener('click', function (e) {
+            if (!profileToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                dropdownMenu.parentElement.classList.remove('show');
+            }
+        });
+
+        // Logout button
+        document.getElementById('logoutBtn').addEventListener('click', function () {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userId');
+            window.location.href = 'home.html';
+        });
+    </script>
+
 
 </body>
 

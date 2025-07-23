@@ -2,45 +2,36 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BunBun Crochet Shop</title>
-  <link rel="stylesheet" href="css/index.css" />
-  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="js/home.js" defer></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BunBun Crochet Shop</title>
+    <link rel="stylesheet" href="css/index.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.16.1/sweetalert2.min.js"
+        integrity="sha512-LGHBR+kJ5jZSIzhhdfytPoEHzgaYuTRifq9g5l6ja6/k9NAOsAi5dQh4zQF6JIRB8cAYxTRedERUF+97/KuivQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="js/home.js" defer></script>
 </head>
 
 <body>
-  <div id="header"></div>
+    <div id="header"></div>
 
-  <main>
-    <section class="hero">
-      <div class="hero-content">
+    <main>
+        <section class="hero">
+            <div class="hero-content">
 
-        <h2>BunBun Threads</h2>
-      </div>
+                <h2>BunBun Threads</h2>
+            </div>
 
-      <h3>Handcrafted Warmth, One Loop at a Time.</h3>
+            <h3>Handcrafted Warmth, One Loop at a Time.</h3>
 
-      <div class="shop-categories">
-        <a href="wearables.html" class="category-btn">
-          <i class="fas fa-tshirt"></i>
-          Wearables
-        </a>
-        <a href="decor.html" class="category-btn">
-          <i class="fas fa-home"></i>
-          Decor
-        </a>
-        <a href="custom.html" class="category-btn">
-          <i class="fas fa-palette"></i>
-          Customizables
-        </a>
-      </div>
 
-    </section>
+        </section>
 
-    <!-- <section class="products-section" id="new-products">
+        <!-- <section class="products-section" id="new-products">
       <h2 class="section-title">New Arrivals</h2>
       <div class="slider-container">
         <button class="slider-btn prev" onclick="slideProducts('new', 'prev')">
@@ -72,44 +63,82 @@
       <div class="slider-indicators" id="popular-indicators"></div>
     </section> -->
 
-    <div class="container" id="items">
-      <h1 class="mb-4">Shop Products</h1>
-    </div>
-  </main>
+        <br>
 
-  <footer>
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3>About BunBun Crochet</h3>
-        <p>We create beautiful, handmade crochet pieces with love and attention to detail. Every item is crafted with
-          care to bring warmth and joy to your life.</p>
-      </div>
-      <div class="footer-section">
-        <h3>Quick Links</h3>
-        <p><a href="#">Home</a></p>
-        <p><a href="#">About Us</a></p>
-        <p><a href="#">Shop</a></p>
-        <p><a href="#">Custom Orders</a></p>
-        <p><a href="#">Contact</a></p>
-      </div>
-      <div class="footer-section">
-        <h3>Connect With Us</h3>
-        <p>Follow us for updates and new arrivals!</p>
-        <div class="social-links">
-          <a href="#" title="Facebook"><i class="fab fa-facebook"></i></a>
-          <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
-          <a href="#" title="Pinterest"><i class="fab fa-pinterest"></i></a>
-          <a href="#" title="Email"><i class="fas fa-envelope"></i></a>
+
+        <div class="d-flex justify-content-between align-items-center filters-search-container">
+            <!-- Left side - Filters -->
+            <div class="d-flex gap-3">
+                <div class="filter-group">
+                    <label for="category-filter" class="visually-hidden">Category</label>
+                    <select id="category-filter" class="form-select">
+                        <option value="all">All Categories</option>
+                        <option value="1">Wearables</option>
+                        <option value="2">Decor</option>
+                        <option value="3">Customizable</option>
+                        <option value="4">New</option>
+                        <option value="5">Popular</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="price-filter" class="visually-hidden">Price</label>
+                    <select id="price-filter" class="form-select">
+                        <option value="all">All Prices</option>
+                        <option value="0-200">Under ₱200</option>
+                        <option value="200-500">₱200 - ₱500</option>
+                        <option value="500-1000">₱500 - ₱1000</option>
+                        <option value="1000+">Over ₱1000</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Right side - Search (your existing code) -->
+            <form class="d-flex search-container" action="/search.html" method="GET">
+                <input class="form-control me-2" type="search" name="term" placeholder="Search..." />
+                <button class="btn btn-hw" type="submit"><i class="bi bi-search"></i></button>
+            </form>
         </div>
-      </div>
-    </div>
-    <div class="copyright">
-      <p>&copy; 2025 BunBun Crochet Shop. All rights reserved. Made with ❤️ for crochet lovers.</p>
-    </div>
-  </footer>
 
-  <script>
-    $(function () {
-      $("#header").load("header.html");
-    });
-  </script>
+        <div class="container" id="items">
+            <h1 class="mb-4">Shop Products</h1>
+        </div>
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>About BunBun Crochet</h3>
+                <p>We create beautiful, handmade crochet pieces with love and attention to detail. Every item is crafted
+                    with
+                    care to bring warmth and joy to your life.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <p><a href="#">Home</a></p>
+                <p><a href="#">About Us</a></p>
+                <p><a href="#">Shop</a></p>
+                <p><a href="#">Custom Orders</a></p>
+                <p><a href="#">Contact</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <p>Follow us for updates and new arrivals!</p>
+                <div class="social-links">
+                    <a href="#" title="Facebook"><i class="fab fa-facebook"></i></a>
+                    <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" title="Pinterest"><i class="fab fa-pinterest"></i></a>
+                    <a href="#" title="Email"><i class="fas fa-envelope"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2025 BunBun Crochet Shop. All rights reserved. Made with ❤️ for crochet lovers.</p>
+        </div>
+    </footer>
+
+    <script>
+        $(function () {
+            $("#header").load("header.html");
+        });
+    </script>
