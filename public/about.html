@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.16.1/sweetalert2.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <title>About Us - BunBun Threads</title>
+    <link href="/css/about.css" rel="stylesheet">
+</head>
+
+<body>
+    <div id="header">Loading header...</div>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="logo">🧶 BunBun Threads</h1>
+            <p class="tagline">Crafting Dreams, One Stitch at a Time</p>
+        </div>
+
+        <!-- Vision Card -->
+        <div class="card">
+            <h2 class="card-title">🌟 Our Vision</h2>
+            <div class="card-content">
+                <p>To become the premier destination for handcrafted crochet treasures, where creativity meets comfort.
+                    We envision a world where every home is filled with the warmth and love that only handmade items can
+                    provide. Our goal is to inspire and connect a global community of crochet enthusiasts while
+                    preserving the timeless art of handcrafting for future generations.</p>
+            </div>
+        </div>
+
+        <!-- Mission Card -->
+        <div class="card">
+            <h2 class="card-title">🎯 Our Mission</h2>
+            <div class="card-content">
+                <p>At BunBun Threads, we are dedicated to creating exceptional, high-quality crochet items that bring
+                    joy and comfort to everyday life. We believe in the power of handmade craftsmanship to tell stories,
+                    create memories, and connect hearts. Our mission is to provide beautifully crafted pieces while
+                    supporting sustainable practices and celebrating the artistry of traditional needlework.</p>
+            </div>
+        </div>
+
+        <!-- Team Section -->
+        <div class="card">
+            <h2 class="card-title">👥 Meet Our Creative Team</h2>
+            <div class="team-grid">
+                <div class="team-member">
+                    <div class="member-image">
+                        <img src="/images/pau.png" alt="Sarah Mitchell"
+                            onerror="this.style.display='none'; this.parentElement.innerHTML='👩‍🎨'; this.parentElement.style.display='flex'; this.parentElement.style.alignItems='center'; this.parentElement.style.justifyContent='center'; this.parentElement.style.fontSize='4rem';">
+                    </div>
+                    <h3 class="member-name">Mary Pauline Calungsod</h3>
+                    <p class="member-role">Lead Designer & Co-Founder</p>
+                    <p class="member-description">
+                        She brings over 8 years of crochet expertise to BunBun Threads. A passionate artisan with a keen
+                        eye for color and texture, she specializes in creating unique patterns that blend traditional
+                        techniques with modern aesthetics. When she's not designing, you'll find her teaching crochet
+                        workshops in the local community.
+                    </p>
+                </div>
+
+                <div class="team-member">
+                    <div class="member-image">
+                        <img src="/images/kim.jpg" alt="Marcus Chen"
+                            onerror="this.style.display='none'; this.parentElement.innerHTML='👨‍💻'; this.parentElement.style.display='flex'; this.parentElement.style.alignItems='center'; this.parentElement.style.justifyContent='center'; this.parentElement.style.fontSize='4rem';">
+                    </div>
+                    <h3 class="member-name">Kimberly G. Eledia</h3>
+                    <p class="member-role">Technical Director & Co-Founder</p>
+                    <p class="member-description">
+                        She combines her love for technology with his appreciation for handcrafted artistry. With a
+                        background in web development and e-commerce, she ensures that our digital presence reflects the
+                        warmth and quality of our physical products. She also manages our supply chain and quality
+                        control processes with meticulous attention to detail.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating crochet patterns -->
+    <div class="crochet-pattern" style="top: 10%; animation-delay: 0s;">🧶</div>
+    <div class="crochet-pattern" style="top: 30%; animation-delay: 5s;">🪡</div>
+    <div class="crochet-pattern" style="top: 50%; animation-delay: 10s;">🧶</div>
+    <div class="crochet-pattern" style="top: 70%; animation-delay: 15s;">🪡</div>
+
+    <script>
+        // Interactive yarn ball that follows cursor
+        const yarnBall = document.createElement('div');
+        yarnBall.className = 'yarn-ball';
+        document.body.appendChild(yarnBall);
+
+        let mouseX = 0, mouseY = 0;
+        let ballX = 0, ballY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+            yarnBall.style.opacity = '0.7';
+        });
+
+        // Smooth yarn ball movement
+        function animateYarnBall() {
+            ballX += (mouseX - ballX) * 0.1;
+            ballY += (mouseY - ballY) * 0.1;
+
+            yarnBall.style.left = ballX - 30 + 'px';
+            yarnBall.style.top = ballY - 30 + 'px';
+
+            requestAnimationFrame(animateYarnBall);
+        }
+        animateYarnBall();
+
+        // Hide yarn ball when mouse leaves window
+        document.addEventListener('mouseleave', () => {
+            yarnBall.style.opacity = '0';
+        });
+
+        // Simplified click effects - no conflicting animations
+        document.querySelectorAll('.card, .team-member').forEach(card => {
+            card.addEventListener('click', function (e) {
+                // Only create ripple if not clicking on a link
+                if (!e.target.closest('a')) {
+                    const ripple = document.createElement('div');
+                    ripple.style.position = 'absolute';
+                    ripple.style.borderRadius = '50%';
+                    ripple.style.background = 'var(--accent-brown)';
+                    ripple.style.opacity = '0.3';
+                    ripple.style.pointerEvents = 'none';
+                    ripple.style.width = '20px';
+                    ripple.style.height = '20px';
+                    ripple.style.left = (e.clientX - this.offsetLeft - 10) + 'px';
+                    ripple.style.top = (e.clientY - this.offsetTop - 10) + 'px';
+                    ripple.style.animation = 'ripple 0.6s ease-out';
+
+                    this.style.position = 'relative';
+                    this.appendChild(ripple);
+
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                }
+            });
+        });
+
+        // Add ripple animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Add scroll-triggered animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        // Initially hide cards for animation
+        document.querySelectorAll('.card').forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(50px)';
+            card.style.transition = `all 0.6s ease ${index * 0.2}s`;
+            observer.observe(card);
+        });
+
+        $(function () {
+            $("#header").load("header.html");
+        });
+    </script>
+</body>
+
+</html>

@@ -21,6 +21,3 @@ router.get('/admin/all', isAuthenticatedUser, authorizeRoles('Admin'), itemContr
 router.get('/:id', itemController.getItemDetails);
 
 module.exports = router;
-
-
-module.exports = router;

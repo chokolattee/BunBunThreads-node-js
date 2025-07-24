@@ -2,24 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Complete Profile</title>
-<!-- jQuery -->
+  
+  <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
   <!-- Bootstrap CSS & JS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
   <!-- SweetAlert2 for prompts -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-  <!-- Your custom CSS -->
-  <link rel="stylesheet" href="/css/profile.css" />
-  <script src="/js/profile.js"></script>
+  <link rel="stylesheet" href="css/profile.css">
+  
 </head>
 <body>
-
-   <div class="floating-shapes">
+  <div class="floating-shapes">
     <div class="shape"></div>
     <div class="shape"></div>
     <div class="shape"></div>
@@ -29,121 +32,448 @@
   <div id="header">Loading header...</div>
 
   <!-- Page Content -->
-  <div class="container form mt-5 pt-5">
+  <div class="container mt-5 pt-5">
     <div class="profile-card">
       <div class="profile-header">
         <h2><i class="fas fa-user-circle"></i> Complete Your Profile</h2>
         <p>Let's make your profile shine ✨</p>
       </div>
 
-      <div class="text-center">
-        <div class="profile-image-container">
-          <img id="profileImagePreview" src="https://via.placeholder.com/120" alt="Profile Picture" />
-          <div class="image-upload-overlay">
-            <i class="fas fa-camera"></i>
+      <div class="container-fluid">
+        <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab">
+              <i class="fas fa-user"></i> Profile
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">
+              <i class="fas fa-shield-alt"></i> Security
+            </button>
+          </li>
+        </ul>
+        
+        <div class="tab-content">
+          <!-- Profile Tab -->
+          <div class="tab-pane fade show active" id="profile" role="tabpanel">
+            <div class="text-center">
+              <div class="profile-image-container">
+                <img id="profileImagePreview" src="https://via.placeholder.com/120" alt="Profile Picture" />
+                <div class="image-upload-overlay">
+                  <i class="fas fa-camera"></i>
+                </div>
+              </div>
+            </div>
+
+            <form id="profileForm" enctype="multipart/form-data">
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="fas fa-crown"></i> Title
+                </label>
+                <select name="title" id="title" class="form-select">
+                  <option value="">Select Title</option>
+                  <option value="Mr.">Mr.</option>
+                  <option value="Ms.">Ms.</option>
+                  <option value="Mrs.">Mrs.</option>
+                </select>
+              </div>
+
+              <input type="hidden" name="userId" id="userId" />
+
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="fas fa-user"></i> Name
+                </label>
+                <div class="form-row">
+                  <input type="text" name="fname" id="fname" placeholder="First Name" class="form-control" required />
+                  <input type="text" name="lname" id="lname" placeholder="Last Name" class="form-control" required />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="fas fa-map-marker-alt"></i> Address
+                </label>
+                <div class="form-row">
+                  <input type="text" name="addressline" id="addressline" placeholder="Street Address" class="form-control" />
+                  <input type="text" name="town" id="town" placeholder="Town/City" class="form-control" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="fas fa-phone"></i> Phone Number
+                </label>
+                <input type="text" name="phone" id="phone" placeholder="Your phone number" class="form-control" />
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">
+                  <i class="fas fa-image"></i> Profile Picture
+                </label>
+                <div class="file-input-wrapper">
+                  <input type="file" name="image" id="image" accept="image/*" />
+                  <label for="image" class="file-input-label">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <br>
+                    Choose a beautiful photo
+                  </label>
+                </div>
+              </div>
+
+              <div class="d-flex gap-3 justify-content-center">
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save"></i> Save Profile
+                </button>
+                
+                <button type="button" id="deactivateBtn" class="btn btn-danger">
+                  <i class="fas fa-user-times"></i> Deactivate Account
+                </button>
+              </div>
+            </form>
+            
+            <div id="profileMsg" class="mt-3 text-center"></div>
+          </div>
+
+          <!-- Security Tab -->
+          <div class="tab-pane fade" id="security" role="tabpanel">
+            <div class="security-card">
+              <h3><i class="fas fa-shield-alt"></i> Account Security</h3>
+              
+              <form id="emailForm" class="mb-4">
+                <div class="form-group">
+                  <label class="form-label">
+                    <i class="fas fa-envelope"></i> Email Address
+                  </label>
+                  <input type="email" name="email" id="email" class="form-control" required placeholder="Enter your email address" />
+                </div>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save"></i> Update Email
+                </button>
+                <div id="emailMsg" class="mt-2"></div>
+              </form>
+              
+              <hr style="border-color: #dee2e6;">
+              
+              <form id="passwordForm">
+                <div class="form-group">
+                  <label class="form-label">
+                    <i class="fas fa-lock"></i> Current Password
+                  </label>
+                  <input type="password" name="currentPassword" id="currentPassword" class="form-control" required placeholder="Enter current password" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">
+                    <i class="fas fa-key"></i> New Password
+                  </label>
+                  <input type="password" name="newPassword" id="newPassword" class="form-control" required placeholder="Enter new password (min 8 characters)" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">
+                    <i class="fas fa-check-circle"></i> Confirm New Password
+                  </label>
+                  <input type="password" name="confirmPassword" id="confirmPassword" class="form-control" required placeholder="Confirm new password" />
+                </div>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-save"></i> Update Password
+                </button>
+                <div id="passwordMsg" class="mt-2"></div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
-
-      <form id="profileForm" enctype="multipart/form-data">
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-crown"></i> Title
-          </label>
-          <select name="title" id="title" class="form-select">
-            <option value="">Select Title</option>
-            <option value="Mr.">Mr.</option>
-            <option value="Ms.">Ms.</option>
-            <option value="Mrs.">Mrs.</option>
-          </select>
-        </div>
-
-        <input type="hidden" name="userId" id="userId" />
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-user"></i> Name
-          </label>
-          <div class="form-row">
-            <input type="text" name="fname" id="fname" placeholder="First Name" class="form-control" required />
-            <input type="text" name="lname" id="lname" placeholder="Last Name" class="form-control" required />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-map-marker-alt"></i> Address
-          </label>
-          <div class="form-row">
-            <input type="text" name="addressline" id="addressline" placeholder="Street Address" class="form-control" />
-            <input type="text" name="town" id="town" placeholder="Town/City" class="form-control" />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-phone"></i> Phone Number
-          </label>
-          <input type="text" name="phone" id="phone" placeholder="Your phone number" class="form-control" />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            <i class="fas fa-image"></i> Profile Picture
-          </label>
-          <div class="file-input-wrapper">
-            <input type="file" name="image" id="image" accept="image/*" />
-            <label for="image" class="file-input-label">
-              <i class="fas fa-cloud-upload-alt"></i>
-              <br>
-              Choose a beautiful photo
-            </label>
-          </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary">
-          <i class="fas fa-save"></i> Save Profile
-        </button>
-        
-        <button type="button" id="deactivateBtn" class="btn btn-danger">
-          <i class="fas fa-user-times"></i> Deactivate Account
-        </button>
-      </form>
-      
-      <p id="profileMsg" class="mt-3"></p>
     </div>
   </div>
-</body>
-<script>
-    // Image preview functionality
-    document.getElementById('image').addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          document.getElementById('profileImagePreview').src = e.target.result;
-        };
-        reader.readAsDataURL(file);
+
+  <script>
+    $(document).ready(function () {
+      const API_BASE_URL = 'http://localhost:3000/';
+      const token = localStorage.getItem('token');
+      const userId = localStorage.getItem('userId');
+
+      if (!token || !userId) {
+        alert("You must be logged in first!");
+        window.location.href = '/login.html';
+        return;
       }
-    });
 
-    // Click on image to trigger file input
-    document.getElementById('profileImagePreview').addEventListener('click', function() {
-      document.getElementById('image').click();
-    });
+      // Set userId in hidden field
+      $('#userId').val(userId);
 
-    document.querySelector('.image-upload-overlay').addEventListener('click', function() {
-      document.getElementById('image').click();
-    });
+      // Initialize header and fetch profile data
+      initHeader();
+      fetchProfileData();
+      fetchUserEmail();
 
-    // Update file input label when file is selected
-    document.getElementById('image').addEventListener('change', function(e) {
-      const label = document.querySelector('.file-input-label');
-      if (e.target.files.length > 0) {
-        label.innerHTML = `<i class="fas fa-check-circle"></i><br>${e.target.files[0].name}`;
-        label.style.background = 'var(--light-brown)';
-        label.style.color = 'white';
+      function initHeader() {
+        $('#header').load('/header.html', function (response, status, xhr) {
+          if (status == "error") {
+            console.error("Failed to load header:", xhr.status, xhr.statusText);
+          } else {
+            document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function (el) {
+              new bootstrap.Dropdown(el);
+            });
+
+            $('#login-link, #register-link').addClass('d-none');
+            $('#user-dropdown').removeClass('d-none');
+
+            $.get(`/api/users/customers/${userId}`, function (res) {
+              if (res.success && res.data) {
+                const data = res.data;
+                const fullName = `${data.fname || ''} ${data.lname || ''}`.trim();
+                $('#username').text(fullName || 'USER');
+                if (data.image_path) {
+                  $('.profile-img').attr('src', `/${data.image_path}`);
+                }
+              }
+            });
+          }
+        });
+      }
+
+      function fetchProfileData() {
+        $.ajax({
+          url: `/api/users/customers/${userId}`,
+          method: 'GET',
+          success: function (res) {
+            if (res.success && res.data) {
+              const data = res.data;
+              $('#title').val(data.title || '');
+              $('#fname').val(data.fname || '');
+              $('#lname').val(data.lname || '');
+              $('#addressline').val(data.addressline || '');
+              $('#town').val(data.town || '');
+              $('#phone').val(data.phone || '');
+              if (data.image_path) {
+                $('#profileImagePreview').attr('src', `/${data.image_path}`);
+              }
+            }
+          },
+          error: function (xhr) {
+            console.warn('No profile found:', xhr.responseText);
+          }
+        });
+      }
+
+      function fetchUserEmail() {
+        $.ajax({
+          url: `/api/users/email/${userId}`,
+          method: 'GET',
+          success: function (res) {
+            if (res.success && res.email) {
+              $('#email').val(res.email);
+            }
+          },
+          error: function (xhr) {
+            console.error('Failed to fetch email:', xhr.responseText);
+            $('#emailMsg').html('<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> Could not load current email</div>');
+          }
+        });
+      }
+
+      // Image preview functionality
+      $('#image').on('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            $('#profileImagePreview').attr('src', e.target.result);
+          };
+          reader.readAsDataURL(file);
+          
+          // Update label
+          const label = $('.file-input-label');
+          label.html(`<i class="fas fa-check-circle"></i><br>${file.name}`);
+          label.css({
+            'background': 'var(--light-brown)',
+            'color': 'white',
+            'border-color': 'var(--light-brown)'
+          });
+        }
+      });
+
+      // Click on image to trigger file input
+      $('#profileImagePreview, .image-upload-overlay').on('click', function() {
+        $('#image').click();
+      });
+
+      // Profile form submission
+      $('#profileForm').on('submit', function (e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        formData.set('userId', userId);
+
+        $.ajax({
+          url: '/api/users/update-profile',
+          method: 'POST',
+          data: formData,
+          contentType: false,
+          processData: false,
+          success: function () {
+            $('#profileMsg').html('<div class="alert alert-success"><i class="fas fa-check-circle"></i> Profile saved successfully!</div>');
+            fetchProfileData();
+            setTimeout(() => $('#profileMsg').fadeOut(), 3000);
+          },
+          error: function (xhr) {
+            $('#profileMsg').html('<div class="alert alert-danger"><i class="fas fa-times-circle"></i> Failed to save profile. Please try again.</div>');
+            console.error(xhr);
+          }
+        });
+      });
+
+      // Email form submission
+      $('#emailForm').on('submit', function (e) {
+        e.preventDefault();
+        const newEmail = $('#email').val().trim();
+        
+        if (!newEmail) {
+          $('#emailMsg').html('<div class="alert alert-danger"><i class="fas fa-times-circle"></i> Email is required</div>');
+          return;
+        }
+
+        $.ajax({
+          url: '/api/users/update-email',
+          method: 'POST',
+          data: { 
+            userId: userId,
+            email: newEmail
+          },
+          success: function (res) {
+            if (res.success) {
+              $('#emailMsg').html('<div class="alert alert-success"><i class="fas fa-check-circle"></i> Email updated successfully!</div>');
+              setTimeout(() => $('#emailMsg').fadeOut(), 3000);
+            } else {
+              $('#emailMsg').html(`<div class="alert alert-danger"><i class="fas fa-times-circle"></i> ${res.message || 'Failed to update email'}</div>`);
+            }
+          },
+          error: function (xhr) {
+            const errorMsg = xhr.responseJSON?.message || 'Failed to update email';
+            $('#emailMsg').html(`<div class="alert alert-danger"><i class="fas fa-times-circle"></i> ${errorMsg}</div>`);
+          }
+        });
+      });
+
+      // Password form submission
+      $('#passwordForm').on('submit', function (e) {
+        e.preventDefault();
+        const currentPassword = $('#currentPassword').val();
+        const newPassword = $('#newPassword').val();
+        const confirmPassword = $('#confirmPassword').val();
+        
+        // Clear previous messages
+        $('#passwordMsg').empty();
+        
+        // Validation
+        if (!currentPassword || !newPassword || !confirmPassword) {
+          $('#passwordMsg').html('<div class="alert alert-danger"><i class="fas fa-times-circle"></i> All fields are required</div>');
+          return;
+        }
+        
+        if (newPassword !== confirmPassword) {
+          $('#passwordMsg').html('<div class="alert alert-danger"><i class="fas fa-times-circle"></i> New passwords do not match</div>');
+          return;
+        }
+        
+        if (newPassword.length < 8) {
+          $('#passwordMsg').html('<div class="alert alert-danger"><i class="fas fa-times-circle"></i> Password must be at least 8 characters</div>');
+          return;
+        }
+
+        $.ajax({
+          url: '/api/users/update-password',
+          method: 'POST',
+          data: { 
+            userId: userId,
+            currentPassword: currentPassword,
+            newPassword: newPassword
+          },
+          success: function (res) {
+            if (res.success) {
+              $('#passwordMsg').html('<div class="alert alert-success"><i class="fas fa-check-circle"></i> Password updated successfully!</div>');
+              $('#passwordForm')[0].reset();
+              setTimeout(() => $('#passwordMsg').fadeOut(), 3000);
+            } else {
+              $('#passwordMsg').html(`<div class="alert alert-danger"><i class="fas fa-times-circle"></i> ${res.message || 'Failed to update password'}</div>`);
+            }
+          },
+          error: function (xhr) {
+            const errorMsg = xhr.responseJSON?.message || 'Failed to update password';
+            $('#passwordMsg').html(`<div class="alert alert-danger"><i class="fas fa-times-circle"></i> ${errorMsg}</div>`);
+          }
+        });
+      });
+
+      // Account deactivation
+      $('#deactivateBtn').on('click', function() {
+        Swal.fire({
+          title: 'Deactivate Account',
+          text: 'Are you sure you want to deactivate your account? This action cannot be undone.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#d33',
+          cancelButtonColor: '#3085d6',
+          confirmButtonText: 'Yes, continue',
+          cancelButtonText: 'Cancel'
+        }).then((result) => {
+          if (result.isConfirmed) {
+            Swal.fire({
+              title: 'Enter Your Password',
+              text: 'Please enter your password to confirm account deactivation',
+              input: 'password',
+              inputPlaceholder: 'Enter your password',
+              inputAttributes: {
+                autocapitalize: 'off',
+                autocorrect: 'off'
+              },
+              showCancelButton: true,
+              confirmButtonText: 'Deactivate Account',
+              confirmButtonColor: '#d33',
+              cancelButtonText: 'Cancel',
+              inputValidator: (value) => {
+                if (!value) {
+                  return 'Password is required!'
+                }
+              }
+            }).then((passwordResult) => {
+              if (passwordResult.isConfirmed) {
+                deactivateAccount(passwordResult.value);
+              }
+            });
+          }
+        });
+      });
+
+      function deactivateAccount(password) {
+        $.ajax({
+          url: '/api/users/deactivate',
+          method: 'POST',
+          data: { 
+            userId: userId,
+            password: password
+          },
+          success: function (res) {
+            if (res.success) {
+              Swal.fire({
+                title: 'Account Deactivated',
+                text: 'Your account has been deactivated. You will be logged out.',
+                icon: 'success'
+              }).then(() => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('userId');
+                window.location.href = '/login.html';
+              });
+            } else {
+              Swal.fire('Error', res.message || 'Failed to deactivate account', 'error');
+            }
+          },
+          error: function (xhr) {
+            const errorMsg = xhr.responseJSON?.message || 'Failed to deactivate account';
+            Swal.fire('Error', errorMsg, 'error');
+          }
+        });
       }
     });
   </script>
+</body>
 </html>

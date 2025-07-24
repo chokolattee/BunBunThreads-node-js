@@ -2,7 +2,6 @@ $(document).ready(function () {
     const API_BASE_URL = 'http://localhost:3000/';
     const token = localStorage.getItem('token');
     const userId = localStorage.getItem('userId');
-    const userRole = localStorage.getItem('userRole'); // NEW: Get user role
 
     if (!token || !userId) {
         alert("You must be logged in first!");
@@ -10,37 +9,29 @@ $(document).ready(function () {
         return;
     }
 
-    // NEW: Only load header if not admin
-    if (userRole !== 'Admin') {
-        $('#header').load('/header.html', function (response, status, xhr) {
-            if (status == "error") {
-                console.error("Failed to load header:", xhr.status, xhr.statusText);
-            } else {
-                // Enable dropdown
-                document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function (el) {
-                    new bootstrap.Dropdown(el);
-                });
+    $('#header').load('/header.html', function (response, status, xhr) {
+        if (status == "error") {
+            console.error("Failed to load header:", xhr.status, xhr.statusText);
+        } else {
+            document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function (el) {
+                new bootstrap.Dropdown(el);
+            });
 
-                // Adjust header links
-                $('#login-link, #register-link').addClass('d-none');
-                $('#user-dropdown').removeClass('d-none');
+            $('#login-link, #register-link').addClass('d-none');
+            $('#user-dropdown').removeClass('d-none');
 
-                // Set user data in header
-                $.get(`/api/users/customers/${userId}`, function (res) {
-                    if (res.success && res.data) {
-                        const data = res.data;
-                        const fullName = `${data.fname || ''} ${data.lname || ''}`.trim();
-                        $('#username').text(fullName || 'USER');
-                        if (data.image_path) {
-                            $('.profile-img').attr('src', `/${data.image_path}`);
-                        }
+            $.get(`/api/users/customers/${userId}`, function (res) {
+                if (res.success && res.data) {
+                    const data = res.data;
+                    const fullName = `${data.fname || ''} ${data.lname || ''}`.trim();
+                    $('#username').text(fullName || 'USER');
+                    if (data.image_path) {
+                        $('.profile-img').attr('src', `/${data.image_path}`);
                     }
-                });
-            }
-        });
-    } else {
-        $('#header').remove(); // NEW: Remove header for admins
-    }
+                }
+            });
+        }
+    });
 
     $('#userId').val(userId);
 
@@ -99,64 +90,51 @@ $(document).ready(function () {
         });
     });
 
-    function deactivateAccount(password) {
-        Swal.fire({
-            title: 'Processing...',
-            html: 'Please wait while we deactivate your account',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-
-                const userIdInt = parseInt(userId, 10);
-                if (isNaN(userIdInt)) {
-                    Swal.fire({
-                        title: 'Error',
-                        text: 'Invalid user session. Please log in again.',
-                        icon: 'error'
-                    });
-                    return;
-                }
-
-                $.ajax({
-                    url: `${API_BASE_URL}api/users/deactivate`,
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    data: JSON.stringify({
-                        userId: userIdInt,
-                        password: password
-                    }),
-                    success: function (res) {
-                        if (res.success) {
-                            Swal.fire({
-                                title: 'Account Deactivated',
-                                text: 'Your account has been deactivated successfully',
-                                icon: 'success'
-                            }).then(() => {
-                                localStorage.clear();
-                                window.location.href = 'login.html';
-                            });
-                        } else {
-                            Swal.fire({
-                                title: 'Error',
-                                text: res.message || res.error || 'Failed to deactivate account',
-                                icon: 'error'
-                            });
-                        }
-                    },
-                    error: function (err) {
-                        console.error('Deactivation error:', err);
-                        const errorMsg = err.responseJSON?.message || err.responseJSON?.error || 'Server error during deactivation';
-                        Swal.fire({
-                            title: 'Error',
-                            text: errorMsg,
-                            icon: 'error'
-                        });
+$('#deactivateBtn').on('click', function() {
+    Swal.fire({
+        title: 'Deactivate Account',
+        text: 'Are you sure you want to deactivate your account? This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, continue',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Prompt for password
+            Swal.fire({
+                title: 'Enter Your Password',
+                text: 'Please enter your password to confirm account deactivation',
+                input: 'password',
+                inputPlaceholder: 'Enter your password',
+                inputAttributes: {
+                    autocapitalize: 'off',
+                    autocorrect: 'off'
+                },
+                showCancelButton: true,
+                confirmButtonText: 'Deactivate Account',
+                confirmButtonColor: '#d33',
+                cancelButtonText: 'Cancel',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'Password is required!'
                     }
-                });
-            }
-        });
-    }
+                    if (value.length < 1) {
+                        return 'Please enter your password!'
+                    }
+                }
+            }).then((passwordResult) => {
+                if (passwordResult.isConfirmed) {
+                    // Call the deactivation function with the entered password
+                    deactivateAccount(passwordResult.value);
+                }
+            });
+        }
+    });
+});
+
+
+    initHeader();
+    fetchProfileData();
 });

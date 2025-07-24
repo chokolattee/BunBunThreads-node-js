@@ -160,11 +160,6 @@ const updateUser = (req, res) => {
 
   const image = req.file ? req.file.path.replace(/\\/g, "/").replace("public/", "") : null;
 
-    // ✅ Add the log here
-  console.log('Form data received:', {
-    title, fname, lname, addressline, town, phone, userId, image
-  });
-
   if (!userId) {
     return res.status(400).json({ error: "Missing userId" });
   }
@@ -529,6 +524,192 @@ const getSingleUser = (req, res) => {
 // };
 
 
+// Update user email
+const updateEmail = (req, res) => {
+  const { userId, email } = req.body;
+
+  if (!userId || !email) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Missing userId or email" 
+    });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Invalid email format" 
+    });
+  }
+
+  // Check if email already exists for another user
+  const checkEmailSql = `SELECT id FROM users WHERE email = ? AND id != ?`;
+  connection.query(checkEmailSql, [email, userId], (err, results) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: "Database error: " + err.message 
+      });
+    }
+
+    if (results.length > 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "Email already exists" 
+      });
+    }
+
+    // Update email
+    const updateSql = `UPDATE users SET email = ? WHERE id = ?`;
+    connection.query(updateSql, [email, userId], (updateErr, updateResult) => {
+      if (updateErr) {
+        return res.status(500).json({ 
+          success: false, 
+          message: "Failed to update email: " + updateErr.message 
+        });
+      }
+
+      if (updateResult.affectedRows === 0) {
+        return res.status(404).json({ 
+          success: false, 
+          message: "User not found" 
+        });
+      }
+
+      return res.json({ 
+        success: true, 
+        message: "Email updated successfully" 
+      });
+    });
+  });
+};
+
+// Update user password
+const updatePassword = (req, res) => {
+  const { userId, currentPassword, newPassword } = req.body;
+
+  if (!userId || !currentPassword || !newPassword) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Missing required fields" 
+    });
+  }
+
+  // Validate new password length
+  if (newPassword.length < 8) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Password must be at least 8 characters long" 
+    });
+  }
+
+  // Get current password hash from database
+  const getUserSql = `SELECT password FROM users WHERE id = ?`;
+  connection.query(getUserSql, [userId], (err, results) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: "Database error: " + err.message 
+      });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "User not found" 
+      });
+    }
+
+    const currentHashedPassword = results[0].password;
+
+    // Verify current password
+    bcrypt.compare(currentPassword, currentHashedPassword, (compareErr, isMatch) => {
+      if (compareErr) {
+        return res.status(500).json({ 
+          success: false, 
+          message: "Password verification error" 
+        });
+      }
+
+      if (!isMatch) {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Current password is incorrect" 
+        });
+      }
+
+      // Hash new password
+      bcrypt.hash(newPassword, 10, (hashErr, hashedNewPassword) => {
+        if (hashErr) {
+          return res.status(500).json({ 
+            success: false, 
+            message: "Password hashing error" 
+          });
+        }
+
+        // Update password in database
+        const updateSql = `UPDATE users SET password = ? WHERE id = ?`;
+        connection.query(updateSql, [hashedNewPassword, userId], (updateErr, updateResult) => {
+          if (updateErr) {
+            return res.status(500).json({ 
+              success: false, 
+              message: "Failed to update password: " + updateErr.message 
+            });
+          }
+
+          if (updateResult.affectedRows === 0) {
+            return res.status(404).json({ 
+              success: false, 
+              message: "User not found" 
+            });
+          }
+
+          return res.json({ 
+            success: true, 
+            message: "Password updated successfully" 
+          });
+        });
+      });
+    });
+  });
+};
+
+// Get user email (for fetching current email)
+const getUserEmail = (req, res) => {
+  const userId = req.params.userId;
+
+  if (!userId) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "Missing userId" 
+    });
+  }
+
+  const sql = `SELECT email FROM users WHERE id = ?`;
+  connection.query(sql, [userId], (err, results) => {
+    if (err) {
+      return res.status(500).json({ 
+        success: false, 
+        message: "Database error: " + err.message 
+      });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "User not found" 
+      });
+    }
+
+    return res.json({ 
+      success: true, 
+      email: results[0].email 
+    });
+  });
+};
+
+
 module.exports = {
   registerUser,
   loginUser,
@@ -539,5 +720,8 @@ module.exports = {
   getCustomerProfile,
   getAllUsers,
   getSingleUser,
-  createAdmin
+  createAdmin,
+   updateEmail,
+  updatePassword,
+  getUserEmail,
 };

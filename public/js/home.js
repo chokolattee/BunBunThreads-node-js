@@ -158,7 +158,7 @@ function applyFilters() {
             window.location.href = 'login.html';
             return;
         }
-
+    
         const $productCard = $(this).closest('.product-card');
         const qty = parseInt($productCard.find('.quantity-input').val());
         const id = $(this).data('id');
@@ -166,11 +166,25 @@ function applyFilters() {
         const price = parseFloat($(this).data('price'));
         const image = $(this).data('image');
         const stock = parseInt($(this).data('stock'));
-
+    
+        if (stock === 0) {
+            alert('This item is out of stock and cannot be added to your cart');
+            return;
+        }
+    
+        if (qty > stock) {
+            alert(`Only ${stock} items available in stock`);
+            return;
+        }
+    
         let cart = getCart();
         let existing = cart.find(item => item.item_id == id);
-
+    
         if (existing) {
+            if (existing.quantity + qty > stock) {
+                alert(`You can only add ${stock - existing.quantity} more of this item to your cart`);
+                return;
+            }
             existing.quantity += qty;
         } else {
             cart.push({
@@ -178,19 +192,17 @@ function applyFilters() {
                 item_name: $productCard.find('.product-name').text(),
                 description: description,
                 price: price,
-                image_path: image, // Use raw name (e.g. "3.jpg"), not full URL
+                image_path: image, 
                 stock: stock,
                 quantity: qty
             });
-
-
         }
-
+    
         saveCart(cart);
         itemCount++;
         $('#itemCount').text(itemCount).css('display', 'block');
         console.log(cart);
-
+    
         window.location.href = 'cart.html';
     });
 

@@ -98,7 +98,13 @@
                         <i class="fas fa-user-circle"></i>
                     </button>
                     <div class="dropdown-menu" id="profileDropdown">
-                        <a href="profile.html"><i class="fas fa-user"></i> Profile</a>
+                        <div class="nav-item">
+                <a href="#" class="nav-link active" onclick="loadPage(this)" data-page="profile.html"
+                    data-tooltip="Profile">
+                    <i class="fas fa-chart-line nav-icon"></i>
+                    <span class="nav-text">Profile</span>
+                </a>
+            </div>
                         <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
                     </div>
                 </div>

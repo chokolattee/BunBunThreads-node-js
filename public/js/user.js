@@ -33,6 +33,7 @@ $(document).ready(function () {
     if (!checkAdminAccess()) {
         return;
     }
+
     const url = 'http://localhost:3000/';
     let currentPage = 1;
     let totalPages = 1;
@@ -76,6 +77,7 @@ $(document).ready(function () {
     $('#viewType').change(function () {
         currentViewType = $(this).val();
         currentPage = 1;
+        allUsers = []; // Reset all users when changing view type
         loadUsers();
         updateViewTypeUI();
     });
@@ -98,7 +100,7 @@ $(document).ready(function () {
         // Set up infinite scroll if selected
         $(window).scroll(function () {
             if (currentViewType === 'infinite' && !isLoading && currentPage < totalPages) {
-                if ($(window).scrollTop() + $(window).height() > $(document).height() - 100) {
+                if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
                     loadMoreUsers();
                 }
             }
@@ -106,30 +108,42 @@ $(document).ready(function () {
     }
 
     function loadUsers() {
+        if (isLoading) return;
+        
         isLoading = true;
         $('#loadingSpinner').show();
-        $('#ubody').html('');
-
-        console.log('Sending request with:', { 
-        page: currentPage,
-        search: searchQuery
-    });
+        
+        // Clear the table only for pagination view
+        if (currentViewType === 'pagination') {
+            $('#ubody').html('');
+        }
 
         $.ajax({
             url: `${url}api/users/users`,
             method: 'GET',
             data: {
                 page: currentPage,
+                limit: 15,
                 search: searchQuery
             },
             dataType: 'json',
             success: function (response) {
-                allUsers = response.rows || [];
+                const users = response.rows || [];
                 totalPages = response.totalPages || 1;
 
-                renderUsers(allUsers);
                 if (currentViewType === 'pagination') {
+                    allUsers = users; // Store only current page for pagination
+                    renderUsers(allUsers);
                     renderPagination();
+                } else {
+                    // For infinite scroll, we'll append to allUsers
+                    if (currentPage === 1) {
+                        allUsers = users;
+                        $('#ubody').html(''); // Clear only on first load
+                    } else {
+                        allUsers = [...allUsers, ...users];
+                    }
+                    renderUsers(users); // Render only the new users
                 }
             },
             error: function (xhr, status, error) {
@@ -189,7 +203,7 @@ $(document).ready(function () {
     function renderUsers(users) {
         const $tbody = $('#ubody');
 
-        if (users.length === 0) {
+        if (users.length === 0 && currentPage === 1) {
             $tbody.html('<tr><td colspan="9" class="text-center">No users found</td></tr>');
             return;
         }
@@ -199,29 +213,37 @@ $(document).ready(function () {
             const statusClass = `status-${user.status.toLowerCase()}`;
 
             const $row = $(`
-          <tr data-id="${user.id}">
-            <td>${user.id}</td>
-            <td>${user.name}</td>
-            <td>${user.email}</td>
-            <td>${user.addressline || ''}</td>
-            <td>${user.town || ''}</td>
-            <td>${user.phone || ''}</td>
-            <td><span class="role-badge ${roleClass}">${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</span></td>
-            <td><span class="status-badge ${statusClass}">${user.status.charAt(0).toUpperCase() + user.status.slice(1)}</span></td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn btn-sm btn-warning roleBtn" data-id="${user.id}" title="Change Role">
-                  <i class="fas fa-user-tag"></i>
-                </button>
-                <button class="btn btn-sm btn-secondary statusBtn" data-id="${user.id}" title="Change Status">
-                  <i class="fas fa-toggle-on"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-        `);
+                <tr data-id="${user.id}">
+                    <td>${user.id}</td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.addressline || ''}</td>
+                    <td>${user.town || ''}</td>
+                    <td>${user.phone || ''}</td>
+                    <td><span class="role-badge ${roleClass}">${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</span></td>
+                    <td><span class="status-badge ${statusClass}">${user.status.charAt(0).toUpperCase() + user.status.slice(1)}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-warning roleBtn" data-id="${user.id}" title="Change Role">
+                                <i class="fas fa-user-tag"></i>
+                            </button>
+                            <button class="btn btn-sm btn-secondary statusBtn" data-id="${user.id}" title="Change Status">
+                                <i class="fas fa-toggle-on"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `);
 
-            $tbody.append($row);
+            // For infinite scroll, append new users
+            if (currentViewType === 'infinite') {
+                $tbody.append($row);
+            } else {
+                // For pagination, replace all content
+                if ($tbody.find(`tr[data-id="${user.id}"]`).length === 0) {
+                    $tbody.append($row);
+                }
+            }
         });
     }
 
@@ -232,35 +254,39 @@ $(document).ready(function () {
         // Previous button
         const prevDisabled = currentPage <= 1 ? 'disabled' : '';
         $pagination.append(`
-        <li class="page-item ${prevDisabled}">
-          <a class="page-link" href="#" aria-label="Previous" data-page="${currentPage - 1}">
-            <span aria-hidden="true">&laquo;</span>
-          </a>
-        </li>
-      `);
+            <li class="page-item ${prevDisabled}">
+                <a class="page-link" href="#" aria-label="Previous" data-page="${currentPage - 1}">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+        `);
 
         // Page numbers
         const maxVisiblePages = 5;
         let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
         let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
+        // Adjust if we're at the beginning or end
         if (endPage - startPage + 1 < maxVisiblePages) {
             startPage = Math.max(1, endPage - maxVisiblePages + 1);
         }
 
+        // Add ellipsis if needed
         if (startPage > 1) {
             $pagination.append('<li class="page-item disabled"><a class="page-link" href="#">...</a></li>');
         }
 
+        // Add page numbers
         for (let i = startPage; i <= endPage; i++) {
             const active = i === currentPage ? 'active' : '';
             $pagination.append(`
-          <li class="page-item ${active}">
-            <a class="page-link" href="#" data-page="${i}">${i}</a>
-          </li>
-        `);
+                <li class="page-item ${active}">
+                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                </li>
+            `);
         }
 
+        // Add ellipsis if needed
         if (endPage < totalPages) {
             $pagination.append('<li class="page-item disabled"><a class="page-link" href="#">...</a></li>');
         }
@@ -268,39 +294,41 @@ $(document).ready(function () {
         // Next button
         const nextDisabled = currentPage >= totalPages ? 'disabled' : '';
         $pagination.append(`
-        <li class="page-item ${nextDisabled}">
-          <a class="page-link" href="#" aria-label="Next" data-page="${currentPage + 1}">
-            <span aria-hidden="true">&raquo;</span>
-          </a>
-        </li>
-      `);
-
-        // Page click handler
-        $pagination.on('click', 'a.page-link', function (e) {
-            e.preventDefault();
-            const page = $(this).data('page');
-            if (page && page !== currentPage) {
-                currentPage = page;
-                loadUsers();
-            }
-        });
+            <li class="page-item ${nextDisabled}">
+                <a class="page-link" href="#" aria-label="Next" data-page="${currentPage + 1}">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        `);
     }
+
+    // Handle pagination clicks
+    $(document).on('click', '#pagination a.page-link', function (e) {
+        e.preventDefault();
+        const page = $(this).data('page');
+        if (page && page !== currentPage) {
+            currentPage = page;
+            loadUsers();
+        }
+    });
 
     // Search functionality
     $('#searchButton').click(function () {
-        searchQuery = $('#userSearch').val();
-        console.log('Search query:', searchQuery);
-        currentPage = 1;
-        loadUsers();
+        performSearch();
     });
 
     $('#userSearch').keypress(function (e) {
         if (e.which === 13) { // Enter key
-            searchQuery = $(this).val();
-            currentPage = 1;
-            loadUsers();
+            performSearch();
         }
     });
+
+    function performSearch() {
+        searchQuery = $('#userSearch').val().trim();
+        currentPage = 1;
+        allUsers = []; // Reset all users when performing a new search
+        loadUsers();
+    }
 
     // Add new admin form submission
     $('#addUserForm').submit(function (e) {
