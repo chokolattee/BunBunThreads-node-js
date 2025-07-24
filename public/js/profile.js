@@ -9,21 +9,17 @@ $(document).ready(function () {
         return;
     }
 
-    // Force-load header
     $('#header').load('/header.html', function (response, status, xhr) {
         if (status == "error") {
             console.error("Failed to load header:", xhr.status, xhr.statusText);
         } else {
-            // FIX: Enable dropdown
             document.querySelectorAll('[data-bs-toggle="dropdown"]').forEach(function (el) {
                 new bootstrap.Dropdown(el);
             });
 
-            // Adjust header links
             $('#login-link, #register-link').addClass('d-none');
             $('#user-dropdown').removeClass('d-none');
 
-            // Set user data in header
             $.get(`/api/users/customers/${userId}`, function (res) {
                 if (res.success && res.data) {
                     const data = res.data;
@@ -120,7 +116,7 @@ $(document).ready(function () {
                         'Content-Type': 'application/json'
                     },
                     data: JSON.stringify({
-                        userId: userIdInt,  // Send as number
+                        userId: userIdInt,  
                         password: password
                     }),
                     success: function (res) {
@@ -156,8 +152,6 @@ $(document).ready(function () {
         });
     }
 
-
-    // Initialize everything
     initHeader();
     fetchProfileData();
 });

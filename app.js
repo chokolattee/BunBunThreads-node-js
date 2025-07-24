@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const nodemailer = require('nodemailer');
+const path = require('path');
 const users = require('./routes/user');
 const itemRoutes = require('./routes/item');
 const categoryRoutes = require('./routes/category');
@@ -18,6 +19,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));       
 app.use('/images', express.static('images')); 
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'home.html'));
+  });
 
 app.use('/api/users', users);               
 app.use('/api/item', itemRoutes);           
