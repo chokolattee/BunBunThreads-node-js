@@ -443,23 +443,29 @@ const getItemDetails = (req, res) => {
             i.image1, 
             i.image2, 
             i.image3,
-            s.quantity,  /* Add this line to get stock quantity */
-            GROUP_CONCAT(ii.image_path) AS images
+            s.quantity,
+            GROUP_CONCAT(DISTINCT ii.image_path) AS images
         FROM item i
         LEFT JOIN item_images ii ON i.item_id = ii.item_id
-        LEFT JOIN stock s ON i.item_id = s.item_id  /* Add this join */
+        LEFT JOIN stock s ON i.item_id = s.item_id
         WHERE i.item_id = ?
-        GROUP BY i.item_id
+        GROUP BY i.item_id, s.quantity
     `;
 
+    // Updated review query to properly handle review images
     const reviewQuery = `
         SELECT 
+            r.review_id,
             r.rating, 
             r.review_text, 
-            c.name AS full_name
+            c.name AS full_name,
+            ri.reviewimg_id,
+            ri.image_path AS review_image_path
         FROM reviews r
         JOIN users c ON r.customer_id = c.id
+        LEFT JOIN review_images ri ON r.review_id = ri.review_id AND ri.deleted_at IS NULL
         WHERE r.item_id = ? AND r.deleted_at IS NULL
+        ORDER BY r.created_at DESC, ri.reviewimg_id
     `;
 
     // First query: get item details + images + stock
@@ -475,21 +481,54 @@ const getItemDetails = (req, res) => {
         }
 
         const item = itemResults[0];
-        item.images = (item.images || '').split(',').filter(Boolean); // clean up images array
 
-        // Second query: get customer reviews
+        // Clean up images array
+        if (item.images) {
+            item.images = item.images.split(',').filter(Boolean);
+        } else {
+            item.images = [];
+        }
+
+        // Second query: get customer reviews with images
         db.query(reviewQuery, [itemId], (err, reviewResults) => {
             if (err) {
                 console.error("🟥 reviewQuery error:", err);
                 return res.status(500).json({ error: 'Review fetch error', details: err });
             }
 
-            item.reviews = reviewResults || [];
+            // Group reviews by review_id and collect images
+            const reviewsMap = new Map();
+
+            reviewResults.forEach(row => {
+                const reviewId = row.review_id;
+
+                if (!reviewsMap.has(reviewId)) {
+                    reviewsMap.set(reviewId, {
+                        review_id: reviewId,
+                        rating: row.rating,
+                        review_text: row.review_text,
+                        full_name: row.full_name,
+                        images: []
+                    });
+                }
+
+                // Add image if it exists
+                if (row.review_image_path) {
+                    reviewsMap.get(reviewId).images.push({
+                        reviewimg_id: row.reviewimg_id,
+                        image_path: row.review_image_path
+                    });
+                }
+            });
+            // Convert map to array
+            const processedReviews = Array.from(reviewsMap.values());
+
+            item.reviews = processedReviews;
+
             res.json(item);
         });
     });
 };
-
 // --------------------
 // EXPORTS
 // --------------------

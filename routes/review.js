@@ -11,6 +11,6 @@ router.put('/edit/:id', upload.array('images', 5), reviewController.updateReview
 router.put('/delete/:id', reviewController.softDeleteReview); 
 router.patch('/restore/:id', reviewController.restoreReview); 
 router.get('/admin', isAuthenticatedUser, authorizeRoles('Admin'), reviewController.getAllDeletedReviews);
-
+router.get('/item/:itemId/customer/:customerId', reviewController.getReviewById);
 
 module.exports = router;

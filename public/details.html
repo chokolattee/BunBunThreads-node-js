@@ -20,7 +20,6 @@
 <body>
     <div id="header"></div>
 
-
     <div class="details-container">
         <div class="product-card">
             <div class="slider-section">
@@ -107,8 +106,8 @@
     <script>
         // Helper function to check if user is logged in
         function isUserLoggedIn() {
-            const token = localStorage.getItem('token');
-            const userId = localStorage.getItem('userId');
+            const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+            const userId = sessionStorage.getItem('userId') || localStorage.getItem('userId');
             return token && userId;
         }
 
@@ -123,20 +122,96 @@
             }, 3000);
         }
 
+        // Function to show out of stock notification
+        function showOutOfStockNotification() {
+            Swal.fire({
+                title: "Out of Stock",
+                text: "Sorry, this item is currently out of stock and cannot be added to your cart.",
+                icon: "error",
+                confirmButtonText: "OK"
+            });
+        }
+
+        // Function to render review images
+        function renderReviewImages(images) {
+            if (!Array.isArray(images) || images.length === 0) return '';
+
+            return `
+                <div class="review-images" style="margin-top: 10px; display:block;">
+                    ${images.map((image, index) => {
+                        // Handle both full paths and just filenames
+                        const imagePath = image.image_path.includes('/') 
+                            ? '/images/' + image.image_path.split('/').pop() 
+                            : '/images/' + image.image_path;
+                        return `
+                            <img src="${imagePath}" 
+                                 alt="Review image ${index + 1}" 
+                                 class="review-image" 
+                                 style="max-width: 100px; max-height: 100px; margin: 5px; border-radius: 5px; cursor: pointer;"
+                                 onclick="window.openImageModal('${imagePath}')"
+                                 onerror="this.style.display='none';">
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        // Make openImageModal available globally
+        window.openImageModal = function(imageSrc) {
+            const modalOverlay = document.createElement('div');
+            modalOverlay.className = 'image-modal-overlay';
+            modalOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+            `;
+
+            modalOverlay.innerHTML = `
+                <div class="image-modal" style="position: relative; max-width: 90%; max-height: 90%;">
+                    <span class="image-modal-close" style="position: absolute; top: -30px; right: -30px; color: white; font-size: 30px; cursor: pointer;">&times;</span>
+                    <img src="${imageSrc}" alt="Review image" class="modal-image" style="max-width: 100%; max-height: 100%; border-radius: 10px;">
+                </div>
+            `;
+
+            document.body.appendChild(modalOverlay);
+
+            // Close modal when clicking overlay or close button
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay || e.target.classList.contains('image-modal-close')) {
+                    document.body.removeChild(modalOverlay);
+                }
+            });
+        };
+
         $(document).ready(() => {
             const params = new URLSearchParams(window.location.search);
             const itemId = params.get("id");
 
+            if (!itemId) {
+                console.error("No item ID provided");
+                return;
+            }
+
+            // Fixed fetch URL
             fetch(`/api/item/${itemId}`)
                 .then(res => {
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     return res.json();
                 })
                 .then(data => {
+                    console.log("Fetched data:", data);
+
                     // Update product info
-                    document.getElementById("itemName").textContent = data.item_name;
-                    document.getElementById("itemDescription").textContent = data.description;
-                    document.getElementById("itemPrice").textContent = data.sell_price;
+                    document.getElementById("itemName").textContent = data.item_name || "Product";
+                    document.getElementById("itemDescription").textContent = data.description || "No description available";
+                    document.getElementById("itemPrice").textContent = data.sell_price || "0.00";
                     document.getElementById("itemStock").textContent = data.quantity ?? 0;
 
                     const imageBaseUrl = "/images/";
@@ -154,7 +229,6 @@
 
                     // Add images to carousel
                     images.forEach((img, index) => {
-                        // Create carousel item
                         const item = document.createElement("div");
                         item.className = `carousel-item ${index === 0 ? 'active' : ''}`;
 
@@ -162,7 +236,7 @@
                         imgTag.src = imageBaseUrl + img;
                         imgTag.className = "d-block w-100";
                         imgTag.alt = data.item_name;
-                        imgTag.onerror = function () {
+                        imgTag.onerror = function() {
                             this.src = imageBaseUrl + 'placeholder.jpg';
                             this.onerror = null;
                         };
@@ -170,7 +244,6 @@
                         item.appendChild(imgTag);
                         carouselInner.appendChild(item);
 
-                        // Create indicator
                         const indicator = document.createElement("button");
                         indicator.type = "button";
                         indicator.dataset.bsTarget = "#productCarousel";
@@ -181,23 +254,44 @@
                         carouselIndicators.appendChild(indicator);
                     });
 
-                    // Set max value of quantity input
+                    // Handle stock and add to cart functionality
                     const quantityInput = document.getElementById("quantityInput");
-                    quantityInput.max = data.quantity ?? 1;
+                    const addToCartBtn = document.getElementById("addToCartBtn");
+                    const stockQuantity = data.quantity ?? 0;
 
-                    // Add to Cart with login check
-                    document.getElementById("addToCartBtn").addEventListener("click", () => {
+                    quantityInput.max = stockQuantity;
+
+                    if (stockQuantity === 0) {
+                        addToCartBtn.disabled = true;
+                        addToCartBtn.textContent = "Out of Stock";
+                        addToCartBtn.classList.add("btn-secondary");
+                        addToCartBtn.classList.remove("btn-primary");
+                        quantityInput.disabled = true;
+                        quantityInput.value = 0;
+                        document.getElementById("itemStock").innerHTML = '<span style="color: red; font-weight: bold;">Out of Stock</span>';
+                    } else {
+                        addToCartBtn.disabled = false;
+                        addToCartBtn.textContent = "Add to Cart";
+                        addToCartBtn.classList.add("btn-primary");
+                        addToCartBtn.classList.remove("btn-secondary");
+                        quantityInput.disabled = false;
+                    }
+
+                    // Add to Cart functionality
+                    addToCartBtn.addEventListener("click", () => {
+                        if (stockQuantity === 0) {
+                            showOutOfStockNotification();
+                            return;
+                        }
+
                         const isLoggedIn = isUserLoggedIn();
-
                         if (!isLoggedIn) {
-
                             window.location.href = "login.html";
                             return;
                         }
 
-                        // Proceed with Add to Cart logic...
                         const quantity = parseInt(quantityInput.value);
-                        const availableQuantity = data.quantity ?? 1;
+                        const availableQuantity = stockQuantity;
 
                         if (isNaN(quantity) || quantity < 1) {
                             Swal.fire("Oops", "Please enter a valid quantity (at least 1).", "error");
@@ -228,110 +322,69 @@
                             });
                         }
 
-                        saveCart(cart);
-                        itemCount++;
-                        $('#itemCount').text(itemCount).css('display', 'block');
                         localStorage.setItem("cart", JSON.stringify(cart));
                         showCartPopup();
-                        window.location.href = 'cart.html';
                     });
-
-
+                    
                     // Render Reviews
                     const reviewsContainer = document.getElementById("reviewsContainer");
+
                     if (!Array.isArray(data.reviews) || data.reviews.length === 0) {
                         reviewsContainer.innerHTML = "<p class='no-reviews'>No reviews yet for this product.</p>";
                     } else {
-                        reviewsContainer.innerHTML = data.reviews.map(review => `
-                        <div class="review">
-                            <div class="reviewer-info">
-                                <span class="reviewer-name">${review.full_name}</span>
-                                <span class="rating">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</span>
-                            </div>
-                            <p class="review-text">${review.review_text}</p>
-                        </div>
-                    `).join('');
+                        reviewsContainer.innerHTML = data.reviews.map(review => {
+                            return `
+                                <div class="review" style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px;">
+                                    <div class="reviewer-info" style="margin-bottom: 10px;">
+                                        <span class="reviewer-name" style="font-weight: bold; margin-right: 10px;">${review.full_name || 'Anonymous'}</span>
+                                        <span class="rating" style="color: #ffa500;">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</span>
+                                    </div>
+                                    <p class="review-text" style="margin-bottom: 10px;">${review.review_text || 'No review text provided'}</p>
+                                    ${renderReviewImages(review.images || [])}
+                                </div>
+                            `;
+                        }).join('');
                     }
                 })
                 .catch(err => {
                     console.error("❌ Fetch error:", err);
-                    document.getElementById("itemName").textContent = "Product not found.";
-                    document.getElementById("itemDescription").textContent = "";
-                    document.getElementById("itemPrice").textContent = "";
-                    document.getElementById("itemStock").textContent = "";
+                    document.getElementById("itemName").textContent = "Product not found";
+                    document.getElementById("itemDescription").textContent = "We couldn't find the product you're looking for";
+                    document.getElementById("itemPrice").textContent = "--";
+                    document.getElementById("itemStock").textContent = "--";
                     document.getElementById("reviewsContainer").innerHTML = "<p class='no-reviews'>Unable to load product reviews.</p>";
                 });
 
             // Close button functionality for cart popup
-            document.querySelector('.popup-close').addEventListener('click', () => {
+            document.querySelector('.popup-close')?.addEventListener('click', () => {
                 document.getElementById('cartPopup').classList.remove('active');
             });
         });
+
         function showSuccessNotification(itemName, quantity) {
             const popup = document.getElementById('cartPopup');
             const popupText = popup.querySelector('.popup-text p');
 
-            // Update the popup text
-            popupText.textContent = `${quantity} ${itemName} has been successfully added to your cart.`;
+            if (popupText) {
+                popupText.textContent = `${quantity} ${itemName} has been successfully added to your cart.`;
+            }
 
-            // Show the popup
             popup.classList.add('active');
 
-            // Auto-hide after 3 seconds
             setTimeout(() => {
                 popup.classList.remove('active');
             }, 3000);
         }
-
-        // In your add to cart event listener:
-        document.getElementById("addToCartBtn").addEventListener("click", () => {
-            // ... existing validation code ...
-
-            const cartItem = {
-                id: data.item_id,
-                item_id: data.item_id, // Add this duplicate field for API compatibility
-                item_name: data.item_name,
-                price: parseFloat(data.sell_price), // Ensure number
-                image_path: images[0],
-                quantity: parseInt(quantity) // Ensure number
-            };
-
-            const cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const checkoutCart = JSON.parse(localStorage.getItem("checkoutCart")) || [];
-
-            // Update both carts
-            const existingIndex = cart.findIndex(item => item.id === data.item_id);
-            if (existingIndex >= 0) {
-                cart[existingIndex].quantity += quantity;
-            } else {
-                cart.push(cartItem);
-            }
-
-            // For checkout cart, replace rather than increment
-            const checkoutExistingIndex = checkoutCart.findIndex(item => item.id === data.item_id);
-            if (checkoutExistingIndex >= 0) {
-                checkoutCart[checkoutExistingIndex] = cartItem;
-            } else {
-                checkoutCart.push(cartItem);
-            }
-
-            localStorage.setItem("cart", JSON.stringify(cart));
-            localStorage.setItem("checkoutCart", JSON.stringify(checkoutCart));
-
-            // ... rest of your code ..
-
-            showSuccessNotification(data.item_name, quantity);
-        });
     </script>
 
     <script>
         $(function () {
             $("#header").load("header.html");
         });
+        
         function saveCart(cart) {
             localStorage.setItem("cart", JSON.stringify(cart));
         }
-
     </script>
 </body>
 

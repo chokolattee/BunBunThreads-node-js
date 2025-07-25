@@ -295,31 +295,38 @@ $(document).ready(function () {
   // Submit new category
   $("#categorySubmit").on('click', function (e) {
     e.preventDefault();
-    const formData = { description: $('#category_description').val() };
+    const formData = { 
+        description: $('#category_description').val().trim() 
+    };
 
-    if (!formData.description.trim()) {
-      bootbox.alert("Please enter a category description.");
-      return;
+    if (!formData.description) {
+        bootbox.alert("Please enter a category description.");
+        return;
     }
 
     $.ajax({
-      method: "POST",
-      url: `${url}api/category/create`,
-      data: JSON.stringify(formData),
-      contentType: "application/json",
-      success: function () {
-        $("#categoryModal").modal("hide");
-        loadCategories();
-        bootbox.alert("Category created successfully!");
-      },
-      error: function (err) {
-        console.log(err);
-        if (err.status !== 401 && err.status !== 403) {
-          bootbox.alert("Error creating category.");
+        method: "POST",
+        url: `${url}api/category/create`,
+        data: JSON.stringify(formData),
+        contentType: "application/json",
+        dataType: "json", // Add this line
+        success: function (response) {
+            $("#categoryModal").modal("hide");
+            $('#category_description').val(''); // Clear the input
+            loadCategories();
+            bootbox.alert(response.message || "Category created successfully!");
+        },
+        error: function (xhr) {
+            console.error("Error details:", xhr.responseJSON);
+            if (xhr.status !== 401 && xhr.status !== 403) {
+                const errorMsg = xhr.responseJSON?.error || 
+                                xhr.responseJSON?.message || 
+                                "Error creating category.";
+                bootbox.alert(errorMsg);
+            }
         }
-      }
     });
-  });
+});
 
   // Edit category button
   $(document).on('click', '.editCategoryBtn', function (e) {

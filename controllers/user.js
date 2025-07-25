@@ -709,6 +709,34 @@ const getUserEmail = (req, res) => {
   });
 };
 
+const searchUser = (req, res) => {
+  const { term } = req.params;
+  const sql = `
+      SELECT 
+            u.id, 
+            u.name, 
+            u.email, 
+            u.role, 
+            u.status, 
+            u.created_at, 
+            u.updated_at
+      FROM users u
+      WHERE u.name LIKE ? AND u.deleted_at IS NULL
+      GROUP BY u.id
+  `;
+
+  const searchTerm = `%${term}%`;
+
+  connection.execute(sql, [searchTerm], (err, results) => {
+      if (err) {
+          console.error("❌ Search SQL Error:", err.message);
+          return res.status(500).json({ status: 'error', message: err.message });
+      }
+
+
+      return res.status(200).json({ status: 'success', data: results });
+  });
+};
 
 module.exports = {
   registerUser,
@@ -724,4 +752,5 @@ module.exports = {
    updateEmail,
   updatePassword,
   getUserEmail,
+  searchUser
 };

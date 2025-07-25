@@ -35,12 +35,13 @@ $(document).ready(function () {
     }
 
     const url = 'http://localhost:3000/';
+    let currentViewMode = 'pagination';
     let currentPage = 1;
-    let totalPages = 1;
-    let isLoading = false;
-    let currentViewType = 'pagination';
-    let searchQuery = '';
+    let itemsPerPage = 15;
     let allUsers = [];
+    let filteredUsers = [];
+    let isLoading = false;
+    let hasMoreData = true;
 
     // Add authorization header to all AJAX requests
     $.ajaxSetup({
@@ -71,79 +72,28 @@ $(document).ready(function () {
         }
     });
 
-    init();
-
-    // View type change handler
-    $('#viewType').change(function () {
-        currentViewType = $(this).val();
-        currentPage = 1;
-        allUsers = []; // Reset all users when changing view type
-        loadUsers();
-        updateViewTypeUI();
-    });
-
-    function updateViewTypeUI() {
-        if (currentViewType === 'pagination') {
-            $('#paginationContainer').show();
-            $('#loadingSpinner').hide();
-            $('#scrollInfo').hide();
-        } else {
-            $('#paginationContainer').hide();
-            $('#scrollInfo').show();
-        }
-    }
-
-    function init() {
-        loadUsers();
-        updateViewTypeUI();
-
-        // Set up infinite scroll if selected
-        $(window).scroll(function () {
-            if (currentViewType === 'infinite' && !isLoading && currentPage < totalPages) {
-                if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
-                    loadMoreUsers();
-                }
-            }
-        });
-    }
-
+    // Load all users
     function loadUsers() {
-        if (isLoading) return;
-        
         isLoading = true;
-        $('#loadingSpinner').show();
-        
-        // Clear the table only for pagination view
-        if (currentViewType === 'pagination') {
-            $('#ubody').html('');
-        }
+        $('#loading-spinner').show();
 
         $.ajax({
             url: `${url}api/users/users`,
             method: 'GET',
             data: {
-                page: currentPage,
-                limit: 15,
-                search: searchQuery
+                page: 1,
+                limit: 1000, // Load all users for client-side filtering
+                search: ''
             },
             dataType: 'json',
             success: function (response) {
-                const users = response.rows || [];
-                totalPages = response.totalPages || 1;
-
-                if (currentViewType === 'pagination') {
-                    allUsers = users; // Store only current page for pagination
-                    renderUsers(allUsers);
-                    renderPagination();
-                } else {
-                    // For infinite scroll, we'll append to allUsers
-                    if (currentPage === 1) {
-                        allUsers = users;
-                        $('#ubody').html(''); // Clear only on first load
-                    } else {
-                        allUsers = [...allUsers, ...users];
+                if (response.rows) {
+                    allUsers = response.rows;
+                    filteredUsers = [...allUsers];
+                    renderUsers();
+                    if (currentViewMode === 'pagination') {
+                        setupPagination();
                     }
-                    renderUsers(users); // Render only the new users
                 }
             },
             error: function (xhr, status, error) {
@@ -156,63 +106,35 @@ $(document).ready(function () {
             },
             complete: function () {
                 isLoading = false;
-                $('#loadingSpinner').hide();
+                $('#loading-spinner').hide();
             }
         });
     }
 
-    function loadMoreUsers() {
-        if (isLoading || currentPage >= totalPages) return;
+    // Render users based on current view mode
+    function renderUsers() {
+        const tbody = $('#ubody');
+        tbody.empty();
 
-        isLoading = true;
-        currentPage++;
-        $('#loadingSpinner').show();
-        $('#scrollInfo').text('Loading more users...');
+        let usersToRender = [];
+        if (currentViewMode === 'pagination') {
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            usersToRender = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
+        } else {
+            // For infinite scroll, show all loaded users
+            usersToRender = filteredUsers;
+        }
 
-        $.ajax({
-            url: `${url}api/users/users`,
-            method: 'GET',
-            data: {
-                page: currentPage,
-                search: searchQuery
-            },
-            dataType: 'json',
-            success: function (response) {
-                const newUsers = response.rows || [];
-                allUsers = [...allUsers, ...newUsers];
-                renderUsers(newUsers);
-                totalPages = response.totalPages || 1;
-            },
-            error: function (xhr, status, error) {
-                console.error('Error loading more users:', error);
-                currentPage--; // Revert page increment on error
-            },
-            complete: function () {
-                isLoading = false;
-                $('#loadingSpinner').hide();
-                if (currentPage < totalPages) {
-                    $('#scrollInfo').text('Scroll to load more users');
-                } else {
-                    $('#scrollInfo').text('All users loaded');
-                    setTimeout(() => $('#scrollInfo').fadeOut(), 2000);
-                }
-            }
-        });
-    }
-
-    function renderUsers(users) {
-        const $tbody = $('#ubody');
-
-        if (users.length === 0 && currentPage === 1) {
-            $tbody.html('<tr><td colspan="9" class="text-center">No users found</td></tr>');
+        if (usersToRender.length === 0) {
+            tbody.append('<tr><td colspan="9" class="text-center">No users found</td></tr>');
             return;
         }
 
-        users.forEach(user => {
+        usersToRender.forEach(user => {
             const roleClass = `role-${user.role.toLowerCase()}`;
             const statusClass = `status-${user.status.toLowerCase()}`;
 
-            const $row = $(`
+            tbody.append(`
                 <tr data-id="${user.id}">
                     <td>${user.id}</td>
                     <td>${user.name}</td>
@@ -234,81 +156,74 @@ $(document).ready(function () {
                     </td>
                 </tr>
             `);
-
-            // For infinite scroll, append new users
-            if (currentViewType === 'infinite') {
-                $tbody.append($row);
-            } else {
-                // For pagination, replace all content
-                if ($tbody.find(`tr[data-id="${user.id}"]`).length === 0) {
-                    $tbody.append($row);
-                }
-            }
         });
     }
 
-    function renderPagination() {
-        const $pagination = $('#pagination');
-        $pagination.empty();
+    // Setup pagination
+    function setupPagination() {
+        const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+        const pagination = $('#pagination');
+        pagination.empty();
+
+        if (totalPages <= 1) return;
 
         // Previous button
-        const prevDisabled = currentPage <= 1 ? 'disabled' : '';
-        $pagination.append(`
-            <li class="page-item ${prevDisabled}">
-                <a class="page-link" href="#" aria-label="Previous" data-page="${currentPage - 1}">
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
+        pagination.append(`
+            <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a>
             </li>
         `);
 
         // Page numbers
-        const maxVisiblePages = 5;
-        let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-        // Adjust if we're at the beginning or end
-        if (endPage - startPage + 1 < maxVisiblePages) {
-            startPage = Math.max(1, endPage - maxVisiblePages + 1);
-        }
-
-        // Add ellipsis if needed
-        if (startPage > 1) {
-            $pagination.append('<li class="page-item disabled"><a class="page-link" href="#">...</a></li>');
-        }
-
-        // Add page numbers
-        for (let i = startPage; i <= endPage; i++) {
-            const active = i === currentPage ? 'active' : '';
-            $pagination.append(`
-                <li class="page-item ${active}">
+        for (let i = 1; i <= totalPages; i++) {
+            pagination.append(`
+                <li class="page-item ${i === currentPage ? 'active' : ''}">
                     <a class="page-link" href="#" data-page="${i}">${i}</a>
                 </li>
             `);
         }
 
-        // Add ellipsis if needed
-        if (endPage < totalPages) {
-            $pagination.append('<li class="page-item disabled"><a class="page-link" href="#">...</a></li>');
-        }
-
         // Next button
-        const nextDisabled = currentPage >= totalPages ? 'disabled' : '';
-        $pagination.append(`
-            <li class="page-item ${nextDisabled}">
-                <a class="page-link" href="#" aria-label="Next" data-page="${currentPage + 1}">
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
+        pagination.append(`
+            <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <a class="page-link" href="#" data-page="${currentPage + 1}">Next</a>
             </li>
         `);
     }
 
     // Handle pagination clicks
-    $(document).on('click', '#pagination a.page-link', function (e) {
+    $(document).on('click', '.page-link', function (e) {
         e.preventDefault();
-        const page = $(this).data('page');
-        if (page && page !== currentPage) {
+        const page = parseInt($(this).data('page'));
+        if (!isNaN(page) && page !== currentPage) {
             currentPage = page;
-            loadUsers();
+            renderUsers();
+            $('html, body').animate({ scrollTop: 0 }, 'fast');
+        }
+    });
+
+    // View mode toggle handler
+    $('.view-option').click(function () {
+        const viewMode = $(this).data('view');
+        if (viewMode !== currentViewMode) {
+            currentViewMode = viewMode;
+            $('.view-option').removeClass('active');
+            $(this).addClass('active');
+
+            // Toggle UI elements
+            if (viewMode === 'infinite') {
+                $('#pagination-container').hide();
+                $('#scroll-info').show();
+            } else {
+                $('#pagination-container').show();
+                $('#scroll-info').hide();
+                currentPage = 1;
+            }
+
+            renderUsers();
+            if (viewMode === 'pagination') {
+                setupPagination();
+            }
         }
     });
 
@@ -318,17 +233,46 @@ $(document).ready(function () {
     });
 
     $('#userSearch').keypress(function (e) {
-        if (e.which === 13) { // Enter key
+        if (e.which === 13) {
             performSearch();
         }
     });
 
     function performSearch() {
-        searchQuery = $('#userSearch').val().trim();
+        const searchTerm = $('#userSearch').val().toLowerCase();
+        if (searchTerm) {
+            filteredUsers = allUsers.filter(user =>
+                (user.name && user.name.toLowerCase().includes(searchTerm)) ||
+                (user.email && user.email.toLowerCase().includes(searchTerm)) ||
+                (user.addressline && user.addressline.toLowerCase().includes(searchTerm)) ||
+                (user.town && user.town.toLowerCase().includes(searchTerm)) ||
+                (user.phone && user.phone.toLowerCase().includes(searchTerm)) ||
+                (user.role && user.role.toLowerCase().includes(searchTerm)) ||
+                (user.status && user.status.toLowerCase().includes(searchTerm)) ||
+                (user.id && user.id.toString().includes(searchTerm))
+            );
+        } else {
+            filteredUsers = [...allUsers];
+        }
+
         currentPage = 1;
-        allUsers = []; // Reset all users when performing a new search
-        loadUsers();
+        renderUsers();
+        if (currentViewMode === 'pagination') {
+            setupPagination();
+        }
     }
+
+    // Infinite scroll handler
+    $(window).scroll(function () {
+        if (currentViewMode !== 'infinite' || isLoading || !hasMoreData) return;
+
+        if ($(window).scrollTop() + $(window).height() > $(document).height() - 100) {
+            $('#loading-spinner').show();
+            setTimeout(() => {
+                $('#loading-spinner').hide();
+            }, 500);
+        }
+    });
 
     // Add new admin form submission
     $('#addUserForm').submit(function (e) {
@@ -373,7 +317,6 @@ $(document).ready(function () {
                 $("#userModal").modal("hide");
                 $('#addUserForm')[0].reset();
                 $('#addUserForm').removeClass('was-validated');
-                currentPage = 1;
                 loadUsers();
 
                 Swal.fire({
@@ -533,4 +476,7 @@ $(document).ready(function () {
     $('#statusModal').on('hidden.bs.modal', function () {
         $('#statusForm')[0].reset();
     });
+
+    // Initialize
+    loadUsers();
 });

@@ -1,12 +1,12 @@
 const db = require('../config/database');
 const createReview = (req, res) => {    
-    const { orderinfo_id, customer_id, item_id, rating, review_text } = req.body;
+    const { orderinfo_id, customer_id: user_id, item_id, rating, review_text } = req.body;
     const imageFiles = req.files || [];
 
-    if (!orderinfo_id || !customer_id || !item_id || !rating) {
+    if (!orderinfo_id || !user_id || !item_id || !rating) {
         const missingFields = [];
         if (!orderinfo_id) missingFields.push('orderinfo_id');
-        if (!customer_id) missingFields.push('customer_id');
+        if (!user_id) missingFields.push('customer_id (user_id)');
         if (!item_id) missingFields.push('item_id');
         if (!rating) missingFields.push('rating');
         
@@ -17,47 +17,63 @@ const createReview = (req, res) => {
         });
     }
 
-    const reviewSql = `
-        INSERT INTO reviews 
-        (orderinfo_id, customer_id, item_id, rating, review_text, created_at)
-        VALUES (?, ?, ?, ?, ?, NOW())
-    `;
-    const reviewValues = [orderinfo_id, customer_id, item_id, rating, review_text || null];
-
-    db.execute(reviewSql, reviewValues, (err, result) => {
+    // First query to get customer_id from user_id
+    const getCustomerSql = `SELECT customer_id FROM customer WHERE user_id = ?`;
+    
+    db.execute(getCustomerSql, [user_id], (err, customerResult) => {
         if (err) {
-            console.error('Database error creating review:', err);
-            return res.status(500).json({ error: 'Error creating review', details: err.message });
+            console.error('Database error fetching customer:', err);
+            return res.status(500).json({ error: 'Error fetching customer information', details: err.message });
         }
 
-        const reviewId = result.insertId;
+        if (customerResult.length === 0) {
+            return res.status(404).json({ error: 'Customer not found for the given user ID' });
+        }
 
-        if (imageFiles.length > 0) {
-            const imgSql = `INSERT INTO review_images (review_id, image_path, created_at) VALUES ?`;
-            const imgValues = imageFiles.map(file => [reviewId, file.filename, new Date()]);
-            
-            db.query(imgSql, [imgValues], (err3) => {      
-                if (err3) {
-                    console.error('Error saving review images:', err3);
-                    return res.status(500).json({ error: 'Error saving review images', details: err3.message });
-                }
+        const customer_id = customerResult[0].customer_id;
+
+        // Now proceed with creating the review
+        const reviewSql = `
+            INSERT INTO reviews 
+            (orderinfo_id, customer_id, item_id, rating, review_text, created_at)
+            VALUES (?, ?, ?, ?, ?, NOW())
+        `;
+        const reviewValues = [orderinfo_id, customer_id, item_id, rating, review_text || null];
+
+        db.execute(reviewSql, reviewValues, (err, result) => {
+            if (err) {
+                console.error('Database error creating review:', err);
+                return res.status(500).json({ error: 'Error creating review', details: err.message });
+            }
+
+            const reviewId = result.insertId;
+
+            if (imageFiles.length > 0) {
+                const imgSql = `INSERT INTO review_images (review_id, image_path, created_at) VALUES ?`;
+                const imgValues = imageFiles.map(file => [reviewId, file.filename, new Date()]);
+                
+                db.query(imgSql, [imgValues], (err3) => {      
+                    if (err3) {
+                        console.error('Error saving review images:', err3);
+                        return res.status(500).json({ error: 'Error saving review images', details: err3.message });
+                    }
+                    return res.status(201).json({ 
+                        success: true, 
+                        message: 'Review created with images', 
+                        reviewId,
+                        imageCount: imageFiles.length
+                    });
+                });
+            } else {
                 return res.status(201).json({ 
                     success: true, 
-                    message: 'Review created with images', 
-                    reviewId,
-                    imageCount: imageFiles.length
+                    message: 'Review created', 
+                    reviewId 
                 });
-            });
-        } else {
-            return res.status(201).json({ 
-                success: true, 
-                message: 'Review created', 
-                reviewId 
-            });
-        }
+            }
+        });
     });
 };
-
 const getAllReviews = (req, res) => {
     const sql = `
         SELECT 
@@ -300,6 +316,28 @@ const restoreReview = (req, res) => {
     });
 };
 
+const getReviewById = (req, res) => {
+    const { itemId, customerId } = req.params;
+    const sql = `
+        SELECT r.review_id 
+        FROM reviews r
+        JOIN orderline ol ON r.orderinfo_id = ol.orderinfo_id
+        JOIN orderinfo oi ON ol.orderinfo_id = oi.orderinfo_id
+        WHERE r.item_id = ? AND oi.customer_id = ?
+    `;
+    
+    db.query(sql, [itemId, customerId], (err, result) => {
+        if (err) return res.status(500).json({ error: 'Error checking review', details: err });
+        return res.status(200).json({ 
+            success: true, 
+            hasReview: result.length > 0,
+            reviewId: result.length > 0 ? result[0].review_id : null
+        });
+    });
+};
+
+
+
 module.exports = {
     createReview,
     getReviewsByCustomer,
@@ -307,5 +345,7 @@ module.exports = {
     softDeleteReview,
     restoreReview,
     getAllReviews,
-    getAllDeletedReviews
+    getAllDeletedReviews,
+    getReviewById
+
 };

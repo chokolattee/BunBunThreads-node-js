@@ -4,6 +4,25 @@ $(document).ready(function () {
     const CART_KEY = 'cart';
     const CHECKOUT_CART_KEY = 'checkoutCart';
 
+
+    function checkAuth() {
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId');
+        
+        if (!token || !userId) {
+            alert('⛔ Please log in first.');
+            window.location.href = '/login.html';
+            return false;
+        }
+        return true;
+    }
+
+    // Only proceed if authenticated
+    if (!checkAuth()) {
+        return;
+    }
+
+
     // DOM Elements
     const $cartContents = $('#cartContents');
     const $cartCount = $('#cart-count');

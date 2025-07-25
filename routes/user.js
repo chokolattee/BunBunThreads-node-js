@@ -4,7 +4,7 @@ const upload = require('../utils/multer')
 const { isAuthenticatedUser, authorizeRoles } = require('../middlewares/auth');
 
 const { registerUser, loginUser, updateUser, deactivateUser, getCustomerProfile, 
-    updateUserRole, updateUserStatus, getAllUsers, getSingleUser, createAdmin, updateEmail, updatePassword, getUserEmail } = require('../controllers/user')
+    updateUserRole, updateUserStatus, getAllUsers, getSingleUser, createAdmin, updateEmail, updatePassword, getUserEmail, searchUser } = require('../controllers/user')
 
 router.post('/register', registerUser);
 router.post('/login', loginUser);
@@ -14,10 +14,11 @@ router.get('/customers/:userId', getCustomerProfile);
 router.get('/email/:userId', getUserEmail)
 router.post('/update-email', updateEmail);
 router.post('/update-password', updatePassword);
-
+router.post('/search-user', searchUser);
 router.get('/users', isAuthenticatedUser, authorizeRoles('Admin'), getAllUsers);
 router.get('/users/:id', isAuthenticatedUser, authorizeRoles('Admin'), getSingleUser);
 router.put('/users/:id/role', isAuthenticatedUser, authorizeRoles('Admin'), updateUserRole);
 router.put('/users/:id/status', isAuthenticatedUser, authorizeRoles('Admin'), updateUserStatus);
 router.post('/create-admin', isAuthenticatedUser, authorizeRoles('Admin'), createAdmin);
+
 module.exports = router;

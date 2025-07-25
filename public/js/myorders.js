@@ -58,6 +58,26 @@ $(document).ready(async function () {
         });
     }
 
+    // Function to check if review exists for a specific item
+    async function checkReviewExists(itemId, customerId) {
+        try {
+            const response = await $.ajax({
+                url: `${API_BASE_URL}/api/reviews/item/${itemId}/customer/${customerId}`,
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            return {
+                hasReview: response.hasReview || false,
+                reviewId: response.reviewId || null
+            };
+        } catch (error) {
+            console.error('Error checking review:', error);
+            return { hasReview: false, reviewId: null };
+        }
+    }
+
     async function loadOrders() {
         try {
             console.log('Loading orders for userId:', userId);
@@ -123,21 +143,41 @@ $(document).ready(async function () {
                 return;
             }
 
-            // Process and display orders
-            const html = ordersRes.data.map(order => {
+            // Process orders and check reviews for each item
+            const ordersWithReviews = await Promise.all(ordersRes.data.map(async (order) => {
                 // Handle missing or invalid items array
                 const items = Array.isArray(order.items) ? order.items : [];
+                
+                // Check review status for each item if order is delivered
+                if (order.status === 'Delivered' && items.length > 0) {
+                    const itemsWithReviewStatus = await Promise.all(items.map(async (item) => {
+                        const reviewStatus = await checkReviewExists(item.item_id, customerId);
+                        return {
+                            ...item,
+                            hasReview: reviewStatus.hasReview,
+                            reviewId: reviewStatus.reviewId
+                        };
+                    }));
+                    return { ...order, items: itemsWithReviewStatus };
+                }
+                
+                return order;
+            }));
 
+            // Display orders with review buttons
+            const html = ordersWithReviews.map(order => {
+                const items = Array.isArray(order.items) ? order.items : [];
+            
                 // Calculate total
                 const total = items.reduce((sum, item) => {
                     const itemTotal = (parseFloat(item.quantity) || 0) * (parseFloat(item.price) || 0);
                     return sum + itemTotal;
                 }, 0);
-
+            
                 // Add shipping cost if available
                 const shippingCost = parseFloat(order.rate) || 0;
                 const grandTotal = total + shippingCost;
-
+            
                 return `
                     <div class="order-card mb-4 p-3 border rounded shadow-sm">
                         <div class="order-header d-flex justify-content-between align-items-center mb-2">
@@ -159,23 +199,34 @@ $(document).ready(async function () {
                             <div class="order-items">
                                 <strong>Items:</strong>
                                 <div class="mt-2">
-                                    ${items.map(item => `
-                                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                            <div class="flex-grow-1">
-                                                <span class="fw-medium">${item.item_name || 'Unknown Item'}</span>
-                                                <small class="text-muted d-block">Qty: ${item.quantity || 0}</small>
-                                                ${order.status === 'Delivered' ? `
-                                                    <button class="btn btn-sm btn-outline-primary mt-1 create-review-btn" 
-                                                            data-item-id="${item.item_id}"
-                                                            data-order-id="${order.orderinfo_id}"
-                                                            data-item-name="${escapeHtml(item.item_name || 'Unknown Item')}">
-                                                        <i class="fas fa-star me-1"></i> Create Review
-                                                    </button>
-                                                ` : ''}
+                                    ${items.map(item => {
+                                        return `
+                                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                                                <div class="flex-grow-1">
+                                                    <span class="fw-medium">${item.item_name || 'Unknown Item'}</span>
+                                                    <small class="text-muted d-block">Qty: ${item.quantity || 0}</small>
+                                                    ${order.status === 'Delivered' ? `
+                                                        ${item.hasReview ? `
+                                                            <button class="btn btn-sm btn-outline-success mt-1 view-review-btn" 
+                                                                    data-review-id="${item.reviewId}"
+                                                                    data-item-id="${item.item_id}"
+                                                                    data-item-name="${escapeHtml(item.item_name || 'Unknown Item')}">
+                                                                <i class="fas fa-eye me-1"></i> View Review
+                                                            </button>
+                                                        ` : `
+                                                            <button class="btn btn-sm btn-outline-primary mt-1 create-review-btn" 
+                                                                    data-item-id="${item.item_id}"
+                                                                    data-order-id="${order.orderinfo_id}"
+                                                                    data-item-name="${escapeHtml(item.item_name || 'Unknown Item')}">
+                                                                <i class="fas fa-star me-1"></i> Create Review
+                                                            </button>
+                                                        `}
+                                                    ` : ''}
+                                                </div>
+                                                <span class="fw-bold">₱${((parseFloat(item.quantity) || 0) * (parseFloat(item.price) || 0)).toFixed(2)}</span>
                                             </div>
-                                            <span class="fw-bold">₱${((parseFloat(item.quantity) || 0) * (parseFloat(item.price) || 0)).toFixed(2)}</span>
-                                        </div>
-                                    `).join('')}
+                                        `;
+                                    }).join('')}
                                 </div>
                             </div>
                         ` : '<p class="text-muted">No items found for this order.</p>'}
@@ -194,6 +245,7 @@ $(document).ready(async function () {
                     </div>
                 `;
             }).join('');
+            
 
             $('#ordersList').html(html);
 
@@ -244,6 +296,27 @@ $(document).ready(async function () {
         window.location.href = '/create-review.html';
     });
 
+    // Event handler for view review button
+    $(document).on('click', '.view-review-btn', function () {
+        const reviewId = $(this).data('review-id');
+        const itemId = $(this).data('item-id');
+        const itemName = $(this).data('item-name');
+        
+        if (reviewId && itemId) {
+            // Store the review context for viewing
+            localStorage.setItem('viewReviewContext', JSON.stringify({
+                reviewId: reviewId,
+                itemId: itemId,
+                itemName: itemName
+            }));
+            
+            // Redirect to view review page or show modal/details
+            window.location.href = `/myreviews.html`;
+        } else {
+            alert('⚠️ Review information not found');
+        }
+    });
+
     // Helper functions
     function updateCartCount() {
         const cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -292,5 +365,6 @@ window.logout = function () {
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
     localStorage.removeItem('reviewContext');
+    localStorage.removeItem('viewReviewContext');
     window.location.href = '/login.html';
 };

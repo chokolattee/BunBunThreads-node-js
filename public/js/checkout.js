@@ -4,6 +4,23 @@ $(document).ready(function () {
     let checkoutCart = [];
     let itemsTotal = 0;
 
+    function checkAuth() {
+        const token = localStorage.getItem('token');
+        const userId = localStorage.getItem('userId');
+        
+        if (!token || !userId) {
+            alert('⛔ Please log in first.');
+            window.location.href = '/login.html';
+            return false;
+        }
+        return true;
+    }
+
+    // Only proceed if authenticated
+    if (!checkAuth()) {
+        return;
+    }
+    
     // Initialize checkout
     function initializeCheckout() {
         checkoutCart = JSON.parse(localStorage.getItem('checkoutCart')) || [];
