@@ -9,6 +9,7 @@ router.post('/', orderController.createOrder);
 // Get orders by customer ID
 router.get('/customer/:customerId', orderController.getOrdersByCustomer);
 router.get('/shipping', orderController.getShippingOptions);
+router.put('/:orderId/status', orderController.updateOrderStatus);
 
 // Admin
 router.get('/admin', isAuthenticatedUser, authorizeRoles('Admin'), orderController.getAllOrders);

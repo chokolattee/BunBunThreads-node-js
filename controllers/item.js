@@ -458,11 +458,12 @@ const getItemDetails = (req, res) => {
             r.review_id,
             r.rating, 
             r.review_text, 
-            c.name AS full_name,
+            u.name AS full_name,
             ri.reviewimg_id,
             ri.image_path AS review_image_path
         FROM reviews r
-        JOIN users c ON r.customer_id = c.id
+        JOIN customer c ON r.customer_id = c.customer_id
+        JOIN users u ON c.user_id = u.id
         LEFT JOIN review_images ri ON r.review_id = ri.review_id AND ri.deleted_at IS NULL
         WHERE r.item_id = ? AND r.deleted_at IS NULL
         ORDER BY r.created_at DESC, ri.reviewimg_id

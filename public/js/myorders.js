@@ -182,7 +182,16 @@ $(document).ready(async function () {
                     <div class="order-card mb-4 p-3 border rounded shadow-sm">
                         <div class="order-header d-flex justify-content-between align-items-center mb-2">
                             <div><strong>Order #${order.orderinfo_id}</strong></div>
-                            <div><span class="badge ${getStatusBadgeClass(order.status)}">${order.status}</span></div>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge ${getStatusBadgeClass(order.status)}">${order.status}</span>
+                                ${order.status === 'Pending' ? `
+                                    <button class="btn btn-sm btn-outline-danger cancel-order-btn" 
+                                            data-order-id="${order.orderinfo_id}"
+                                            title="Cancel Order">
+                                        <i class="fas fa-times me-1"></i> Cancel
+                                    </button>
+                                ` : ''}
+                            </div>
                         </div>
                         <div class="row mb-2">
                             <div class="col-md-6">
@@ -272,6 +281,67 @@ $(document).ready(async function () {
             $('#ordersList').html(`<p class="text-danger">⚠️ ${errorMessage}</p>`);
         }
     }
+
+    $(document).on('click', '.cancel-order-btn', function () {
+        const orderId = $(this).data('order-id');
+        const button = $(this);
+        
+        // Show confirmation dialog
+        if (!confirm('Are you sure you want to cancel this order? This action cannot be undone.')) {
+            return;
+        }
+        
+        // Disable button and show loading
+        button.prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Cancelling...');
+        
+        // Make API call to cancel the order
+        $.ajax({
+            url: `${API_BASE_URL}/api/orders/${orderId}/status`,
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            data: JSON.stringify({
+                status: 'Cancelled'
+            }),
+            success: function(response) {
+                if (response.success) {
+                    // Show success message
+                    alert('✅ Order cancelled successfully!');
+                    
+                    // Reload orders to reflect the change
+                    loadOrders();
+                } else {
+                    // Show error message
+                    alert('⚠️ Failed to cancel order: ' + (response.message || 'Unknown error'));
+                    
+                    // Re-enable button
+                    button.prop('disabled', false).html('<i class="fas fa-times me-1"></i> Cancel');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error cancelling order:', error);
+                
+                let errorMessage = 'Failed to cancel order. Please try again.';
+                
+                if (xhr.status === 401) {
+                    errorMessage = 'Authentication failed. Please log in again.';
+                } else if (xhr.status === 403) {
+                    errorMessage = 'You don\'t have permission to cancel this order.';
+                } else if (xhr.status === 404) {
+                    errorMessage = 'Order not found.';
+                } else if (xhr.status === 400) {
+                    errorMessage = 'Cannot cancel this order. It may have already been processed.';
+                }
+                
+                alert('⚠️ ' + errorMessage);
+                
+                // Re-enable button
+                button.prop('disabled', false).html('<i class="fas fa-times me-1"></i> Cancel');
+            }
+        });
+    });
 
     // Event handler for create review button
     $(document).on('click', '.create-review-btn', function () {
